@@ -653,7 +653,7 @@ I'll integrate **Ownership and Functions in Rust** while covering **String types
 
 ---
 
-# **Ownership and Functions in Rust**
+### **Ownership and Functions in Rust**
 
 ### **How Ownership Works with Strings**
 
@@ -661,7 +661,7 @@ In Rust, ownership rules apply to strings differently based on how they are stor
 
 ---
 
-## **1️⃣ `String` – A Heap-Allocated, Dynamic String**
+#### **1️⃣ `String` – A Heap-Allocated, Dynamic String**
 ```rust
 fn take_ownership(s: String) {
     println!("Owned string: {}", s);
@@ -673,19 +673,19 @@ fn main() {
     // println!("{}", my_string); // ❌ Error: `my_string` is moved
 }
 ```
-### **Behavior**
+#### **Behavior**
 - `String` is an **owned heap-allocated string**.
 - When `my_string` is **passed to the function**, ownership **moves**, and `main()` loses access.
 - Trying to use `my_string` after the function call results in a **compile-time error**.
 
-### **Key Points**
+#### **Key Points**
 ✔ **Stored on the heap**, dynamically resizable.  
 ✔ **Ownership transfers** when passed to a function.  
 ✔ **Dropped** when the function exits unless returned.
 
 ---
 
-## **2️⃣ `&String` – A Reference to a Heap String**
+#### **`&String` – A Reference to a Heap String**
 ```rust
 fn borrow_string(s: &String) {
     println!("Borrowed string: {}", s);
@@ -697,19 +697,19 @@ fn main() {
     println!("{}", my_string); // ✅ Still valid!
 }
 ```
-### **Behavior**
+#### **Behavior**
 - `&String` is a **reference to a heap-allocated `String`**.
 - **Ownership is not transferred**, so `my_string` is still valid after the function call.
 - This is **borrowing** and enables **safe, read-only access**.
 
-### **Key Points**
+#### **Key Points**
 ✔ Allows **read-only access** to heap data.  
 ✔ **Ownership is not moved**—original value remains valid.  
 ✔ Prevents unnecessary heap allocation and copying.
 
 ---
 
-## **3️⃣ `str` – A Hardcoded, Read-Only String in Binary**
+#### **`str` – A Hardcoded, Read-Only String in Binary**
 ```rust
 fn print_literal(s: &str) {
     println!("String literal: {}", s);
@@ -1385,12 +1385,13 @@ Rust **ensures memory safety at compile time** through **ownership rules**, prev
 Ownership **affects all aspects of Rust programming**, making it essential to understand these concepts.
 
 #### Ownership: The Foundation of Rust’s Memory Safety
-**Ownership rules ensure that every value has a single owner.**
-
 #### Ownership Rules:
 1️⃣ **Each value in Rust has one and only one owner.**  
 2️⃣ **When the owner goes out of scope, Rust automatically cleans up the value.**  
 3️⃣ **Transferring ownership (moving) invalidates the original variable.**
+
+- new owner starts off just like a fresh variable initialization. It has its own set of permissions on what it can do with the data it represents.
+- When ownership is moved from one variable to another in Rust, the mutability of the new owner is determined by how the new variable is declared—not by the original variable's mutability.
 
 ```rust
 fn main() {
