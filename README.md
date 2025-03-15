@@ -250,7 +250,7 @@ Rust provides two compound types:
 
 ##### The Tuple Type (Stack)
 - **Definition:**  
-  - A tuple groups values of different types together into a single compound type. Once created, the length of a tuple is fixed, it cannot grow of srhink.
+  - A tuple groups values of different types together into a single compound type. Once created, the length of a tuple is fixed, it cannot grow of shrink.
   
 ```rust
 fn main() {
@@ -534,7 +534,7 @@ fn main() {
 
 ### Variables and Data: Move, Copy, and Clone in Rust
 
-#### 1️⃣ Stack Data (Fixed Size) → Copy
+#### Stack Data (Fixed Size) → Copy
 - Copy(Simple Bitwise Duplication) means that when a variable is assigned to another or passed to a function, Rust creates a bitwise duplicate of its value instead of transferring ownership. Only small, fixed-size types stored on the stack can implement Copy.
 
 **Types That Implement Copy**
@@ -562,7 +562,7 @@ fn main() {
 - **Explanation:**  
   - Simple, fixed-size types like integers are stored entirely on the stack. Copying such types is inexpensive and doesn’t require complex memory management. This is why these types implement the `Copy` trait, allowing for a bitwise copy of the value.
 
-#### 2️⃣ Heap Data (Dynamic Size) → Move
+#### Heap Data (Dynamic Size) → Move
 - Move(Ownership Transfer) occurs when ownership of a heap-allocated value is transferred to another variable. After the move, the original variable becomes invalid, preventing multiple ownership and ensuring memory safety. Rust enforces this rule to prevent double free errors.
 
 ✔ Move is the default behavior for non-Copy types.
@@ -587,7 +587,7 @@ fn main() {
 
 ✔ A `String` **stores only a pointer, length, and capacity on the stack**.  
 ✔ **`s1` is on the stack**, while its **actual contents ("hello") live on the heap**.  
-✔ When ownership moves from `s1` to `s2` (**which gets a new stack address**), **Rust only moves the stack data** (pointer, length, and capacity).  
+✔ When ownership moves from `s1` to `s2` (**which gets a new stack address**), Rust only moves the stack data (pointer, length, and capacity).  
 ✔ The **heap data remains unchanged**—Rust **does not copy** the actual string `"hello"`.  
 ✔ **`s1` is now invalid**, ensuring **only `s2` has ownership** and preventing **double free errors*
 
@@ -609,7 +609,7 @@ fn main() {
 #### 3️⃣ Cloning Heap Data -> Clone
 - Clone(Explicit Deep Copy) creates a new, independent copy of heap-allocated data, duplicating both stack metadata and heap contents. Unlike Copy, Clone is explicit and usually expensive, so Rust requires manually calling .clone().
 
-**Types That Implement Clone**
+**Types That Implement Clone Trait**
 ✔ Most heap-allocated types implement Clone, allowing deep copies:
 - String
 - Vec<T>
@@ -649,10 +649,6 @@ fn main() {
 
 ### Ownership and Functions in Rust
 
-I'll integrate **Ownership and Functions in Rust** while covering **String types** in the scope of our notes. Here’s an updated section in `README.md` format:
-
----
-
 ### **Ownership and Functions in Rust**
 
 ### **How Ownership Works with Strings**
@@ -661,7 +657,7 @@ In Rust, ownership rules apply to strings differently based on how they are stor
 
 ---
 
-#### **1️⃣ `String` – A Heap-Allocated, Dynamic String**
+#### **`String` – A Heap-Allocated, Dynamic String**
 ```rust
 fn take_ownership(s: String) {
     println!("Owned string: {}", s);
@@ -730,7 +726,7 @@ fn main() {
 
 ---
 
-## **4️⃣ `&str` – A Reference to String Data in Memory**
+## **`&str` – A Reference to String Data in Memory**
 ```rust
 fn display_message(message: &str) {
     println!("Message: {}", message);
@@ -905,10 +901,8 @@ fn main() {
 #### Solution Using References(&) to Borrow Data
 - **How It Solves the Problem:**  
   - Instead of transferring ownership, you can pass a reference. This allows the function to access the data without taking ownership, leaving the original variable valid after the function call.
-
-
-
-**Remember s1 examlpe thisis how it will look. Example with &:**
+  
+**Remember s1 examlpe this is how it will look. Example with &:**
 ```rust
 fn calculate_length(s: &String) -> usize {
     s.len()
@@ -1203,7 +1197,7 @@ Slices **do not take ownership**; they just provide a **view into the data**.
 - **Ensure data remains valid** (prevents out-of-sync indexes).  
 - **More efficient and safer** than using raw indexes.
 
-#### 🔹 Problem: Finding the First Word Without Slices
+#### Problem: Finding the First Word Without Slices
 Imagine we need to **find the first word** in a string.
 
 #### **1️⃣ Attempt Without Using Slices**
