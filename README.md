@@ -512,11 +512,11 @@ fn main() {
   - **Stack:** Use for temporary variables and fixed-size data.
   - **Heap:** Use for dynamic data that might grow or shrink.
 - **Access:**  
-  - Stack: Direct access—CPU operations are very fast.  
-  - Heap: Pointer-based access, requiring extra lookup time.
+  - **Stack**: Direct access—CPU operations are very fast.  
+  - **Heap**: Pointer-based access, requiring extra lookup time.
 - **Use Cases:**  
-  - Stack: Function calls, fixed-size data (integers, floats, booleans).  
-  - Heap: Dynamic data (e.g., Strings, Vectors, complex objects).
+  - **Stack**: Function calls, fixed-size data (integers, floats, booleans).  
+  - **Heap**: Dynamic data (e.g., Strings, Vectors, complex objects).
 
 #### Why Does Rust Care About Stack & Heap?
 - **Function calls use the stack:**  
@@ -535,6 +535,18 @@ fn main() {
 ### Variables and Data: Move, Copy, and Clone in Rust
 
 #### 1️⃣ Stack Data (Fixed Size) → Copy
+- Copy(Simple Bitwise Duplication) means that when a variable is assigned to another or passed to a function, Rust creates a bitwise duplicate of its value instead of transferring ownership. Only small, fixed-size types stored on the stack can implement Copy.
+
+**Types That Implement Copy**
+✔ All primitive types implement Copy because they are stored entirely on the stack and are cheap to duplicate:
+- Integer types: i8, i16, i32, i64, i128, u8, u16, u32, u64, u128
+- Floating-point types: f32, f64
+- Boolean: bool
+- Character: char
+- Pointer types:
+- Immutable references: &T (if T: Copy)
+- Raw pointers: *const T, *mut T
+
 - **Example:**
   ```rust
   let x = 5;
@@ -551,6 +563,22 @@ fn main() {
   - Simple, fixed-size types like integers are stored entirely on the stack. Copying such types is inexpensive and doesn’t require complex memory management. This is why these types implement the `Copy` trait, allowing for a bitwise copy of the value.
 
 #### 2️⃣ Heap Data (Dynamic Size) → Move
+- Move(Ownership Transfer) occurs when ownership of a heap-allocated value is transferred to another variable. After the move, the original variable becomes invalid, preventing multiple ownership and ensuring memory safety. Rust enforces this rule to prevent double free errors.
+
+✔ Move is the default behavior for non-Copy types.
+✔ Rust automatically "moves" ownership when a non-Copy type (like String) is assigned to another variable
+
+**Types That Follow Move Semantics**
+✔ Any type that does not implement Copy follows move semantics. ✔ This includes:
+- Heap-allocated types:
+- String
+- Vec<T>
+- Box<T>
+- HashMap<K, V>
+- BTreeMap<K, V>
+- Custom structs (unless explicitly marked Copy)
+- Tuples, arrays, or structs containing non-Copy elements
+
 - **Example:**
   ```rust
   let s1 = String::from("hello");
@@ -579,6 +607,19 @@ fn main() {
   - This move mechanism is a cornerstone of Rust’s memory safety, as it ensures that only one variable is responsible for freeing heap memory, eliminating the risk of double-free errors.
 
 #### 3️⃣ Cloning Heap Data -> Clone
+- Clone(Explicit Deep Copy) creates a new, independent copy of heap-allocated data, duplicating both stack metadata and heap contents. Unlike Copy, Clone is explicit and usually expensive, so Rust requires manually calling .clone().
+
+**Types That Implement Clone**
+✔ Most heap-allocated types implement Clone, allowing deep copies:
+- String
+- Vec<T>
+- Box<T>
+- HashMap<K, V>
+- BTreeMap<K, V>
+- Rc<T> (Reference-counted pointer)
+- Arc<T> (Thread-safe reference-counted pointer)
+- Custom types (if manually implemented)
+
 - **Example:**
   ```rust
   let s1 = String::from("hello");
@@ -607,6 +648,131 @@ fn main() {
 ---
 
 ### Ownership and Functions in Rust
+
+I'll integrate **Ownership and Functions in Rust** while covering **String types** in the scope of our notes. Here’s an updated section in `README.md` format:
+
+---
+
+# **Ownership and Functions in Rust**
+
+### **How Ownership Works with Strings**
+
+In Rust, ownership rules apply to strings differently based on how they are stored and referenced. Let’s explore **four key string types** and their behavior in functions.
+
+---
+
+## **1️⃣ `String` – A Heap-Allocated, Dynamic String**
+```rust
+fn take_ownership(s: String) {
+    println!("Owned string: {}", s);
+} // `s` is dropped here
+
+fn main() {
+    let my_string = String::from("Hello, Rust!");
+    take_ownership(my_string);
+    // println!("{}", my_string); // ❌ Error: `my_string` is moved
+}
+```
+### **Behavior**
+- `String` is an **owned heap-allocated string**.
+- When `my_string` is **passed to the function**, ownership **moves**, and `main()` loses access.
+- Trying to use `my_string` after the function call results in a **compile-time error**.
+
+### **Key Points**
+✔ **Stored on the heap**, dynamically resizable.  
+✔ **Ownership transfers** when passed to a function.  
+✔ **Dropped** when the function exits unless returned.
+
+---
+
+## **2️⃣ `&String` – A Reference to a Heap String**
+```rust
+fn borrow_string(s: &String) {
+    println!("Borrowed string: {}", s);
+}
+
+fn main() {
+    let my_string = String::from("Hello, Rust!");
+    borrow_string(&my_string);
+    println!("{}", my_string); // ✅ Still valid!
+}
+```
+### **Behavior**
+- `&String` is a **reference to a heap-allocated `String`**.
+- **Ownership is not transferred**, so `my_string` is still valid after the function call.
+- This is **borrowing** and enables **safe, read-only access**.
+
+### **Key Points**
+✔ Allows **read-only access** to heap data.  
+✔ **Ownership is not moved**—original value remains valid.  
+✔ Prevents unnecessary heap allocation and copying.
+
+---
+
+## **3️⃣ `str` – A Hardcoded, Read-Only String in Binary**
+```rust
+fn print_literal(s: &str) {
+    println!("String literal: {}", s);
+}
+
+fn main() {
+    print_literal("Hello, world!");
+}
+```
+### **Behavior**
+- `"Hello, world!"` is a **string literal**—a hardcoded **`str`** stored in the program's binary.
+- The function accepts a `&str` reference, so ownership **never changes**.
+
+### **Key Points**
+✔ **Immutable & hardcoded** into the compiled binary.  
+✔ Fast access—no heap allocation required.  
+✔ Can be safely passed around as `&str`.
+
+---
+
+## **4️⃣ `&str` – A Reference to String Data in Memory**
+```rust
+fn display_message(message: &str) {
+    println!("Message: {}", message);
+}
+
+fn main() {
+    let my_string = String::from("Dynamic Rust!");
+    display_message(&my_string); // ✅ Implicit conversion: `&String` → `&str`
+    
+    let my_literal = "Hardcoded Rust!";
+    display_message(my_literal); // ✅ Direct `&str`
+}
+```
+### **Behavior**
+- `&str` is a **reference to string data** in memory.
+- Works with both **string literals (`str`) and `String` (heap)**.
+- **Implicit conversion**: `&String` automatically converts to `&str` when needed.
+
+### **Key Points**
+✔ **Does not take ownership**.  
+✔ Works with both `String` and `str`.  
+✔ **More flexible** than `&String`, making functions reusable.
+
+---
+
+## **Summary Table: Strings & Ownership in Rust**
+| Type     | Stored In| Ownership | When Passed to a Function      |
+|----------|----------|-----------|--------------------------------|
+| `String` | Heap     | **Owned** | **Moved** (unless cloned)      |
+| `&String`| Heap     | Borrowed  | **Not moved** (safe reference) |
+| `str`    | Binary   | Immutable | Always available, fast access  |
+| `&str`   | Memory   | Borrowed  | **Not moved** (safe reference) |
+
+### **Best Practices**
+- Use **`String`** when you need a **dynamic, heap-allocated string**.
+- Use **`&str`** when you just need to **read a string without taking ownership**.
+- Prefer **`&str` over `&String`** in function signatures (`fn my_func(s: &str)`) for flexibility.
+- **Avoid unnecessary ownership transfers** to optimize performance.
+
+---
+
+Let me know if you need refinements or additions! 🚀
 
 #### How Ownership Works with Functions
 - **Explanation:**
