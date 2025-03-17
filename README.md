@@ -478,7 +478,7 @@ fn main() {
 - **Definition:**  
   - The stack is a region of memory used for static memory allocation. It follows a Last In, First Out (LIFO) order.
 - **How It Works:**  
-  - Useful when dealing with nested loops. Allows breaking or continuing a specific loop.
+
 - **Characteristics:**
   - **Speed:** Allocation and deallocation are extremely fast since they only involve adjusting the stack pointer.
   - **Size:** Memory on the stack is limited and must be known at compile time.
@@ -651,7 +651,7 @@ fn main() {
 
 ### **Ownership and Functions in Rust**
 
-### **How Ownership Works with Strings**
+#### **How Ownership Works with Strings**
 
 In Rust, ownership rules apply to strings differently based on how they are stored and referenced. Let’s explore **four key string types** and their behavior in functions.
 
@@ -715,18 +715,18 @@ fn main() {
     print_literal("Hello, world!");
 }
 ```
-### **Behavior**
+#### **Behavior**
 - `"Hello, world!"` is a **string literal**—a hardcoded **`str`** stored in the program's binary.
 - The function accepts a `&str` reference, so ownership **never changes**.
 
-### **Key Points**
+#### **Key Points**
 ✔ **Immutable & hardcoded** into the compiled binary.  
 ✔ Fast access—no heap allocation required.  
 ✔ Can be safely passed around as `&str`.
 
 ---
 
-## **`&str` – A Reference to String Data in Memory**
+#### **`&str` – A Reference to String Data in Memory**
 ```rust
 fn display_message(message: &str) {
     println!("Message: {}", message);
@@ -760,7 +760,7 @@ fn main() {
 | `str`    | Binary   | Immutable | Always available, fast access  |
 | `&str`   | Memory   | Borrowed  | **Not moved** (safe reference) |
 
-### **Best Practices**
+#### **Best Practices**
 - Use **`String`** when you need a **dynamic, heap-allocated string**.
 - Use **`&str`** when you just need to **read a string without taking ownership**.
 - Prefer **`&str` over `&String`** in function signatures (`fn my_func(s: &str)`) for flexibility.
@@ -768,13 +768,10 @@ fn main() {
 
 ---
 
-Let me know if you need refinements or additions! 🚀
-
 #### How Ownership Works with Functions
 - **Explanation:**
   - When you pass a variable to a function, Rust follows the same rules as when assigning variables. For stack data (like integers), the data is copied. For heap data (like `String`), ownership is transferred (moved) unless you pass a reference.
   -` Stack data (i32)` is copied, while `heap data (String)` is moved.
-
 
 **Move Example (Heap Data):**
 When we pass a variable to a function, it behaves just like assigning it to another variable -> 
@@ -785,9 +782,17 @@ let s2 = s1; //Ownership moves to s2, s1 is no longer valid.
 ````
 In Functions
 
+- Function parameters follow the same rules of ownership **(copying vs. moving)**.
+
+- If a type **does not implement the `Copy` trait**, ownership **moves** to the parameter.
+
+- If the type **implements the `Copy` trait**, Rust **creates a copy** of the value for the parameter.
+
+- If ownership **moves**, the function must **return the value** to the caller to prevent the memory from being deallocated.
+
 ```rust
 fn takes_ownership(some_string: String) {
-    println!("{some_string}"); // some_string is dropped when the function scope ends.
+    println!("{some_string}"); // some_string is dropped when the function scope ends. in this function, the parameter some_string takes ownership of the value passed into it. 
 }
 
 fn makes_copy(some_integer: i32) {
@@ -863,7 +868,7 @@ fn main() {
 
 ---
 
-### Rules of Borrowing and Ownership
+#### Rules of Borrowing and Ownership
 
 Rust’s ownership rules are the cornerstone of its memory safety.
 - **Key Rules:**
@@ -878,6 +883,16 @@ Rust’s ownership rules are the cornerstone of its memory safety.
 ---
 
 ### Referencing and Borrowing in Rust
+
+- A **reference** is an address of a value in memory.  
+  In other languages, it's called a **pointer**.
+
+- A **reference** allows the program to use a value  
+  **without transferring ownership**.
+
+- We describe this action of creating a reference as **"borrowing"**.
+
+- Create a reference with the **borrow operator (`&`)**.
 
 #### The Problem with Moving Ownership
 - **Explanation:**
@@ -1091,7 +1106,7 @@ void read() {
 - **If two threads modify `shared_value` at the same time**, the value can become **corrupted**.
 - Rust **prevents this at compile time** by **restricting multiple references to mutable data**.
 
-## 📌 Key Takeaways  
+### 📌 Key Takeaways  
 ✅ **Mutable references (`&mut`) allow modifying borrowed data without transferring ownership.**  
 ✅ **Rust prevents multiple mutable references at the same time to avoid data races.**  
 ✅ **Mutable references cannot coexist with immutable references to ensure data consistency.**  
@@ -1119,11 +1134,11 @@ int main() {
 ✔ **This can lead to crashes or memory corruption** because the **memory is already freed**.  
 ✔ **Rust prevents this by enforcing safe references at compile time!**  
 
-#### 🔹 Rust **Prevents** Dangling References
+#### Rust **Prevents** Dangling References
 In Rust, the **borrow checker ensures that references always point to valid data**.  
 If a reference might become **invalid**, Rust **won’t compile the code**.
 
-##### **2️⃣ Example: Dangling Reference in Rust (Compile-Time Error)**
+##### **Example: Dangling Reference in Rust (Compile-Time Error)**
 ```rust
 fn dangle() -> &String { // ❌ ERROR: Returning a reference to a local variable
     let s = String::from("hello"); // `s` is created inside the function
@@ -1145,7 +1160,7 @@ but there is no value for it to be borrowed from
 - The reference `&s` would point to **freed memory**, which **Rust prevents**.  
 - **Rust ensures that all references remain valid for their entire lifetime**.  
 
-#### 🔹 ✅ Correct Way: Return Ownership Instead of a Reference
+#### Correct Way: Return Ownership Instead of a Reference
 Instead of returning a **reference to a local variable**, **move ownership out of the function**.
 
 #### **3️⃣ Example: Fixing the Dangling Reference**
@@ -1337,7 +1352,7 @@ fn main() {
 #### Array Slices
 Slices work for **arrays** too!
 
-#### **5️⃣ Array Slice Example**
+#### **Array Slice Example**
 ```rust
 fn main() {
     let a = [1, 2, 3, 4, 5];
@@ -1366,7 +1381,7 @@ fn main() {
 - Rust **prevents indexing bugs at compile time**, unlike many other languages.  
 - **Mastering slices is key to writing efficient Rust code**!  
 
-### Chapter 4 Summary: Ownership, Borrowing, References, and Slices
+#### Chapter 4 Summary: Ownership, Borrowing, References, and Slices
 
 #### Why Is Ownership Important?
 Rust **ensures memory safety at compile time** through **ownership rules**, preventing memory leaks, dangling pointers, and data races **without a garbage collector**.
@@ -1494,3 +1509,636 @@ println!("{:?}", slice); // Output: [2, 3]
 - **Ownership and borrowing are the foundation of Rust’s memory safety model.**  
 - **Rust eliminates entire classes of memory bugs (use-after-free, data races, and null pointers).**  
 - **Understanding these concepts is crucial for writing safe and efficient Rust programs.**  
+
+# Chapter 5: Structs in Rust
+
+## **What Are Structs?**
+Structs in Rust are used to **group related data together**. They are similar to tuples but provide additional clarity and flexibility by **associating names** with each piece of data.Each struct you define is its own type, even though the fields within the struct might have the same or different types.
+
+### **Why Use Structs Instead of Tuples?**
+✔ Structs **name** each field, making the code easier to understand.
+✔ The order of fields **does not matter** when creating an instance.
+✔ Structs allow for **self-documenting code**.
+✔ Unlike tuples, fields are accessed by **name** instead of index.
+
+---
+## **Defining a Struct**
+To define a struct in Rust, use the `struct` keyword, followed by the struct’s name and a set of **named fields**.
+
+### **Example: Defining a `User` Struct**
+```rust
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+```
+✔ This struct groups together multiple **related** fields.
+✔ Each field has a **name** and **type**.
+✔ Unlike tuples, field names **clarify their meaning**.
+
+---
+## **Creating an Instance of a Struct**
+Once a struct is defined, we can **instantiate** it by providing values for each field.
+
+### **Example: Creating a `User` Instance**
+```rust
+fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };
+}
+```
+✔ Field order **does not** have to match the struct definition.
+✔ The struct instance is stored in memory with **each field identified by name**.
+
+---
+## **Accessing and Modifying Struct Fields**
+To retrieve values from a struct, we use **dot notation** (`.`).
+
+### **Example: Accessing a Field**
+```rust
+println!("User email: {}", user1.email);
+```
+✔ Dot notation allows direct access to **any field** of the struct.
+✔ This is **clearer** than tuple indexing.
+
+### **Making a Struct Mutable**
+To modify struct fields, the **entire instance** must be marked `mut`.
+
+```rust
+fn main() {
+    let mut user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };
+
+    user1.email = String::from("anotheremail@example.com"); // ✅ Allowed since `user1` is mutable
+}
+```
+✔ **Rust does not allow partial mutability**—the whole instance must be `mut`.
+✔ This prevents confusion about which fields can change.
+
+---
+## **Returning Structs from Functions**
+Structs can be returned from functions just like other types.
+
+### **Example: Function That Returns a Struct**
+```rust
+fn build_user(email: String, username: String) -> User {
+    User {
+        active: true,
+        username,
+        email,
+        sign_in_count: 1,
+    }
+}
+```
+✔ The function **creates and returns** a `User` instance.
+✔ Uses **field init shorthand**—instead of `email: email`, we can just write `email`.
+✔ This makes code **more concise and readable**.
+
+---
+## **Using Struct Update Syntax**
+Sometimes, we want to **create a new struct instance** based on an existing one, changing only some fields. Instead of manually copying each field, we can use **struct update syntax**.
+
+### **Example: Creating a New Struct from an Existing One**
+```rust
+fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };
+
+    let user2 = User {
+        email: String::from("another@example.com"),
+        ..user1 // ✅ Copies remaining fields from `user1`
+    };
+}
+```
+✔ `..user1` **copies** all fields from `user1` except those explicitly set.
+✔ The **username** field is moved from `user1`, making `user1` **invalid** after this operation.
+✔ If only **copyable** fields (`bool`, `u64`) were used, `user1` would still be valid.
+✔ This **reduces repetition** and ensures field consistency.
+
+### **How Struct Update Syntax Affects Ownership**
+- The **`=` operator moves the data** from the previous instance to the new one.
+- If a struct contains **heap-allocated fields** (like `String`), those fields are **moved**.
+- If a struct contains **Stack-only fields** those fileds are **copyed**.
+- **After the move, the original instance is no longer valid** and cannot be used.
+
+### **Example: Move in Struct Update Syntax**
+```rust
+fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from("user1"),
+        email: String::from("user1@example.com"),
+        sign_in_count: 1,
+    };
+
+    let user2 = User {
+        email: String::from("user2@example.com"),
+        ..user1 // Moves `username` field
+    };
+    
+    // println!("{}", user1.username); // ❌ ERROR: user1.username was moved
+}
+```
+✔ `user1.username` **was moved** into `user2`, making `user1` invalid.
+✔ If `user2` had **new values for all `String` fields**, `user1` would still be usable.
+✔ **Fields that implement `Copy` (`bool`, `u64`) are duplicated, not moved.**
+
+## Tuple Structs and Unit-Like Structs in Rust
+
+### **Tuple Structs: Structs Without Named Fields**
+Tuple structs provide the ability to **group related data without explicitly naming each field**. They work similarly to tuples but are **distinct types**, preventing unintended type mix-ups.
+
+### **Defining and Instantiating Tuple Structs**
+Tuple structs follow this syntax:
+
+```rust
+struct StructName(Type1, Type2, Type3);
+```
+
+Example:
+```rust
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+
+fn main() {
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+}
+```
+#### **Key Takeaways**
+✅ **Each tuple struct is its own type**  
+✅ **Even if fields have the same types, instances are distinct**  
+✅ **Useful when naming individual fields is unnecessary**  
+✅ **Prevents mixing up different data types unintentionally**  
+
+#### **Accessing Tuple Struct Fields**
+Tuple struct instances behave like regular tuples, allowing:
+- **Destructuring**:
+  ```rust
+  let Color(r, g, b) = black;
+  ```
+- **Index Access**:
+  ```rust
+  let red = black.0; // Accessing the first field
+  ```
+
+### **Unit-Like Structs: Structs Without Any Fields**
+Rust allows **empty structs**, called **unit-like structs**, that have no fields but still behave as types.
+
+#### **Defining and Instantiating Unit-Like Structs**
+```rust
+struct AlwaysEqual;
+
+fn main() {
+    let subject = AlwaysEqual;
+}
+```
+#### **Use Cases for Unit-Like Structs**
+✅ **Useful when implementing traits without storing data**  
+✅ **Can serve as markers or flags in the type system**  
+✅ **Acts similarly to `()` (unit type) but provides a unique type**  
+
+---
+
+## **Ownership of Struct Data**
+When defining structs, **ownership of fields must be considered** to ensure **data validity** throughout the struct's lifetime.
+
+### **Why Use `String` Instead of `&str`?**
+In earlier examples, we used:
+```rust
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+```
+✔ **Each instance owns its data**  
+✔ **Ensures struct data remains valid**  
+
+Using references (`&str`) inside structs introduces **lifetime complexities**, requiring Rust to **ensure references remain valid**. Consider this incorrect example:
+
+```rust
+struct User {
+    active: bool,
+    username: &str,  // ❌ Error: Reference stored without specifying a lifetime
+    email: &str,
+    sign_in_count: u64,
+}
+
+fn main() {
+    let user1 = User {
+        active: true,
+        username: "someusername123",
+        email: "someone@example.com",
+        sign_in_count: 1,
+    };
+}
+```
+
+#### **Compiler Error**
+```
+error[E0106]: missing lifetime specifier
+  --> src/main.rs:3:15
+   |
+3  |     username: &str,
+   |               ^ expected named lifetime parameter
+   |
+   | help: consider introducing a named lifetime parameter
+```
+
+### **How to Fix This?**
+✔ **Use `String` instead of `&str`** to ensure the struct owns its data.  
+✔ **Use lifetimes (`'a`)** if references **must be stored** (covered in Chapter 10).  
+
+For now, the simplest approach is:
+```rust
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+```
+
+### **Key Takeaways**
+✅ **Structs** allow grouping related data with named fields.
+✅ **Instances** are created using key-value pairs inside `{}`.
+✅ **Dot notation** provides easy access to struct fields.
+✅ **Entire instances must be mutable** to modify fields.
+✅ **Field init shorthand** simplifies struct instantiation.
+✅ **Struct update syntax (`..existing_instance`)** allows efficient creation of new instances.
+✅ **Heap-allocated fields (`String`) are moved, invalidating the original instance.**
+✅ **Stack-only fields (`bool`, `u64`) are copied, leaving the original instance usable.**
+
+
+## **Debugging Structs in Rust**
+
+By default, **structs cannot be printed** using `println!`. Rust does not assume how a struct should be formatted because it could have various fields and types. However, Rust provides **traits** that allow developers to customize the printing behavior of structs.
+
+---
+
+### **📌 `Debug` Trait (`#[derive(Debug)]`)**
+To enable Rust to print a struct for debugging, **derive the `Debug` trait**:
+
+```rust
+#[derive(Debug)]
+struct User {
+    username: String,
+    email: String,
+    active: bool,
+}
+
+fn main() {
+    let user = User {
+        username: String::from("rustacean"),
+        email: String::from("rust@example.com"),
+        active: true,
+    };
+
+    println!("{:?}", user); // Works because of `#[derive(Debug)]`
+}
+```
+✔ `#[derive(Debug)]` **automatically implements** the `Debug` trait for a struct.  
+✔ Allows **developer-friendly printing** using `println!`.  
+
+### **📌 Debug Formatting with `:?`**
+Once the `Debug` trait is derived, **use `:?` inside `{}`** in `println!` to print the struct:
+
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+
+    println!("Rectangle data: {:?}", rect);
+}
+```
+✔ **Prints the entire struct** in a **compact, developer-friendly format**.  
+✔ Useful for **quick debugging** but not the most readable for complex structs.
+
+#### **📌 Output**
+```
+Rectangle data: Rectangle { width: 30, height: 50 }
+```
+
+---
+
+### **📌 Pretty Debug Formatting with `:#?`**
+For **better readability**, use `:#?` inside `{}`:
+
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+
+    println!("Rectangle data (formatted): {:#?}", rect);
+}
+```
+✔ **Formats the struct across multiple lines** for **clearer debugging output**.  
+✔ Ideal for **large structs with multiple fields**.
+
+#### **📌 Output**
+```
+Rectangle data (formatted): Rectangle {
+    width: 30,
+    height: 50,
+}
+```
+
+---
+
+### **📌 `dbg!` Macro for Debugging**
+The `dbg!` macro is a **powerful debugging tool** that:
+- Prints **both** the **expression** and its **result**.
+- **Includes file and line number** where it's called.
+- **Returns the value**, so it can be used inside expressions.
+
+#### **Example: Debugging an Expression**
+```rust
+fn main() {
+    let scale = 2;
+    let width = dbg!(30 * scale);
+}
+```
+✔ Useful for **debugging calculations and variable assignments**.  
+✔ Unlike `println!`, `dbg!` prints to **stderr (standard error)** instead of stdout.  
+
+#### **📌 Output**
+```
+[src/main.rs:4] 30 * scale = 60
+```
+
+#### **Example: Debugging a Struct**
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+
+    dbg!(&rect);
+}
+```
+
+#### **📌 Output**
+```
+[src/main.rs:10] &rect = Rectangle {
+    width: 30,
+    height: 50,
+}
+```
+✔ The `dbg!` macro shows **file name, line number, and value**.  
+✔ Since `dbg!` **takes ownership**, using `&rect` ensures the struct remains accessible after logging.
+
+---
+
+## **💡 Summary**
+| Debugging Method            | Usage                      | Output Type                | Best For |
+|-----------------------------|----------------------------|----------------------------|----------|
+| **`#[derive(Debug)]`**      | Enables debug printing     | None (derives trait)       | Required for `:?` and `dbg!` |
+| **`println!("{:?}", var)`** | Quick struct printing      | Compact single-line output | Simple debugging |
+| **`println!("{:#?}", var)`**| Prettified struct printing | Multi-line output          | Large structs |
+| **`dbg!(expression)`**      | Debugs expressions         | Shows file, line, and value| Tracing variable values |
+
+# **Methods in Rust: Defining and Using Methods in Structs**
+
+## **📌 What Are Methods?**
+- **Methods** are **similar to functions**, but they are defined within the context of a **struct**, **enum**, or **trait object**.
+- The **first parameter** of a method is always `self`, which represents the **instance** of the struct the method is being called on.
+- Methods allow **data encapsulation** and **better organization** of related functionality.
+
+---
+
+## **📌 Defining Methods in Rust**
+- Methods are defined **inside an `impl` block** (short for *implementation*).
+- Methods use `self` to refer to the instance they are being called on.
+
+### **Example: Adding an `area` Method to a `Rectangle` Struct**
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    // Defining a method for Rectangle
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    println!("The area of the rectangle is {} square pixels.", rect1.area());
+}
+```
+
+✅ **Key Details:**
+- **`impl Rectangle {}`** → Starts the implementation block for `Rectangle`.
+- **`fn area(&self) -> u32 {}`** → Defines a method **inside** the `impl` block.
+- **`&self`**:
+  - `self` is a reference to the instance of `Rectangle`.
+  - The `&` means this method **borrows the instance immutably** (does not modify it).
+- **Calling the method** → `rect1.area()` instead of `area(rect1)`, making it **more intuitive**.
+
+---
+
+## **📌 Understanding `self` in Methods**
+The first parameter of a method is always **`self`**, but it can be used in different ways:
+
+| `self` Type      | Meaning |
+|------------------|---------|
+| `self`          | Takes **ownership** of the instance. |
+| `&self`         | Borrows **immutably** (read-only access). |
+| `&mut self`     | Borrows **mutably** (allows modification). |
+
+### **Example: Different `self` Usage**
+```rust
+impl Rectangle {
+    fn consume(self) {
+        println!("Rectangle consumed: {:?}", self);
+    }
+
+    fn update_width(&mut self, new_width: u32) {
+        self.width = new_width;
+    }
+
+    fn get_width(&self) -> u32 {
+        self.width
+    }
+}
+```
+✔ **`self` (Takes ownership)** → `consume(self)` moves the instance.  
+✔ **`&mut self` (Mutable Borrow)** → `update_width(&mut self, new_width)` modifies the struct.  
+✔ **`&self` (Immutable Borrow)** → `get_width(&self)` reads data without modifying it.
+
+---
+
+## **📌 Why Use Methods Instead of Functions?**
+✅ **More Organized Code**: Methods keep related functionality inside the `impl` block, making the code **easier to read and maintain**.  
+✅ **Method Syntax is Cleaner**: Instead of `area(rect)`, we can simply call `rect.area()`.  
+✅ **Avoids Repeating Type Definitions**: No need to repeatedly specify `Rectangle` in function parameters.  
+
+---
+
+## **📌 Methods vs Fields with the Same Name**
+- Rust **allows methods to have the same name as struct fields**.
+- When **using parentheses**, Rust treats it as a **method**.
+- Without parentheses, Rust assumes it's the **field**.
+
+### **Example**
+```rust
+impl Rectangle {
+    fn width(&self) -> bool {
+        self.width > 0
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    if rect1.width() {
+        println!("The rectangle has a nonzero width; it is {}", rect1.width);
+    }
+}
+```
+📌 **Key Takeaways:**
+✔ `rect1.width()` calls the **method** `width()`.  
+✔ `rect1.width` accesses the **field** `width`.  
+✔ Methods like this can be used as **getters** when struct fields are private.
+
+---
+
+## **📌 Automatic Referencing & Dereferencing in Methods**
+- In **C/C++**, you use `.` to call a method on an object and `->` when calling it on a pointer.
+- **Rust simplifies this** with **automatic referencing and dereferencing**.
+
+### **Example**
+```rust
+p1.distance(&p2);
+(&p1).distance(&p2); // Rust automatically adds `&`
+```
+✔ Rust automatically **adds `&`, `&mut`, or `*`** so that `p1` matches the method signature.  
+✔ This makes **method calls ergonomic** without needing explicit pointer syntax.  
+
+---
+
+## **📌 Methods with More Parameters**
+- Methods **can accept multiple parameters**, just like functions.
+- Example: A method that checks if one `Rectangle` **can fit inside another**.
+
+### **Example: `can_hold` Method**
+```rust
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+```
+Now, we can call:
+```rust
+let rect1 = Rectangle { width: 30, height: 50 };
+let rect2 = Rectangle { width: 10, height: 40 };
+
+println!("Can rect1 hold rect2? {}", rect1.can_hold(&rect2));
+```
+📌 **Key Takeaways:**
+✔ `rect1.can_hold(&rect2)` passes `rect2` as a **reference** (to avoid ownership transfer).  
+✔ The method returns `true` if `rect1` can completely contain `rect2`.  
+
+---
+
+## **📌 Associated Functions (Methods Without `self`)**
+- Methods inside `impl` that **don’t take `self`** are called **associated functions**.
+- These are often used as **constructors**.
+
+### **Example: Defining a Constructor**
+```rust
+impl Rectangle {
+    fn square(size: u32) -> Self {
+        Self { width: size, height: size }
+    }
+}
+```
+✔ `Self` refers to `Rectangle` inside the `impl` block.  
+✔ This allows us to call `Rectangle::square(10)`, returning a `Rectangle` with equal width and height.
+
+### **Calling an Associated Function**
+```rust
+let sq = Rectangle::square(10);
+```
+📌 **Uses `::` instead of `.`** → `Rectangle::square(10)` instead of `sq.square()`.  
+
+---
+
+## **📌 Multiple `impl` Blocks**
+Rust allows multiple `impl` blocks for a struct.
+
+### **Example**
+```rust
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+```
+📌 **Why Use Multiple `impl` Blocks?**
+✔ Helps **organize** large structs with many methods.  
+✔ Useful when implementing **traits** (covered in Chapter 10).  
+
+---
+
+## **💡 Summary**
+| Feature | Description |
+|---------|------------|
+| **Methods** | Defined inside an `impl` block, always have `self` as the first parameter. |
+| **`self` Usage** | `&self` (borrow immutably), `&mut self` (borrow mutably), `self` (move ownership). |
+| **Method Syntax** | `instance.method()` is cleaner than `function(instance)`. |
+| **Automatic Referencing** | Rust automatically adds `&`, `&mut`, or `*` when calling methods. |
+| **Multiple Parameters** | Methods can accept multiple arguments, like `can_hold(&self, other: &Rectangle)`. |
+| **Associated Functions** | Methods **without `self`**, often used as **constructors** (e.g., `Rectangle::square(10)`). |
+| **Multiple `impl` Blocks** | Allowed, useful for organizing large structs. |
+
+---
+
+## **🚀 Why Are Methods Important?**
+- **Organize related functionality inside structs**.
+- **Improve readability & encapsulation**.
+- **Method syntax is ergonomic and intuitive**.
+- **Allow struct-specific behavior (e.g., constructors, calculations, checks)**.
+
