@@ -2316,6 +2316,13 @@ The `IpAddrKind` enum only defines the **type** of IP address but does not store
 
 ### **Storing IP Addresses Using a Struct**
 ```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+```
+
+```rust
 struct IpAddr {
     kind: IpAddrKind,
     address: String,
@@ -2336,21 +2343,17 @@ let loopback = IpAddr {
 
 ---
 
-Here’s a comparison of **Enums vs. Structs** along with guidelines on when to use each:
-
----
-
 # **Enums vs. Structs in Rust**
 Rust provides **structs** and **enums** for defining custom types. While both can group related data, they serve different purposes.
 
 ## **Key Differences Between Enums and Structs**
-| Feature        | Structs | Enums |
-|---------------|--------|------|
-| **Purpose** | Groups related fields together | Represents one of multiple predefined variants |
+| Feature                                                | Structs | Enums |
+|---------------|--------                                          |------|
+| **Purpose** | Groups related fields together                     | Represents one of multiple predefined variants |
 | **Data Storage** | Can hold multiple fields with different types | Each variant can have different types of associated data |
-| **Exhaustiveness** | No need to check field types explicitly | Must handle all possible variants in a `match` expression |
-| **Flexibility** | Best when all fields are always required | Best when a value can only be one of several options |
-| **Memory Usage** | Always stores all fields | Stores only the data for the current variant |
+| **Exhaustiveness** | No need to check field types explicitly     | Must handle all possible variants in a `match` expression |
+| **Flexibility** | Best when all fields are always required       | Best when a value can only be one of several options |
+| **Memory Usage** | Always stores all fields                      | Stores only the data for the current variant |
 
 ---
 
@@ -2796,7 +2799,7 @@ let none = plus_one(None);
 ---
 ## **The Importance of Exhaustiveness in `match`**
 Rust requires that `match` expressions **cover all possible cases**. If we forget to handle a case, Rust **won’t compile the code**.
-
+Exhaustive checking is a feature in some programming languages where the compiler ensures that all possible cases of a value are handled in a match or switch statement.
 ```rust
 fn plus_one(x: Option<i32>) -> Option<i32> {
     match x {
@@ -2859,7 +2862,11 @@ match dice_roll {
 Rust provides a more concise way to **match against a single pattern** using `if let`. This is useful when you only care about one specific match case and want to ignore everything else.
 
 Instead of using a full `match` expression when only **one pattern matters**, `if let` allows us to reduce boilerplate code and improve readability.
-
+````rust
+if let Some(n) = maybe_number {
+    println!("Number: {}", n);
+}
+````
 ---
 ## **`match` vs. `if let`**
 Consider the following example where we have a configuration value stored in an `Option<u8>`. We want to execute code **only if the value is `Some`**.
@@ -2949,4 +2956,133 @@ match coin {
 - When you want **concise and readable** code.
 - When ignoring other cases **is acceptable**.
 
+# **Chapter 6: Summary - Enums, Option, match, and if let**
 
+## **1. What Are Enums?**
+- Enums allow defining a **type with a fixed set of possible values**.
+- Unlike structs, an **enum instance can only hold one of its variants** at a time.
+
+### **Example: Enum for IP Addresses**
+```rust
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+```
+- `V4` stores four `u8` values, while `V6` stores a `String`.
+- Enums allow each variant to store **different types of data**.
+
+✔ **Why Use an Enum?**
+- Ensures that a value is **only one of the possible variants**.
+- Reduces redundancy (no need for extra fields like in structs).
+
+---
+## **2. Enums vs Structs: When to Use Each**
+| Feature            | Structs | Enums |
+|-------------------|--------|------|
+| **Grouping Data** | ✅ Related fields that must always be together | ✅ One of multiple predefined variants |
+| **Data Flexibility** | ❌ All fields must be present | ✅ Each variant can store different types of data |
+| **Pattern Matching** | ❌ Not applicable | ✅ Requires exhaustive handling of all cases |
+| **Use Case** | **User profiles, structured records** | **IP addresses, message types, states** |
+
+✔ **Use Structs** when all fields are always required together.  
+✔ **Use Enums** when only **one** variant is active at a time.  
+✔ **Use Structs inside Enums** when variants need **additional structured data**.
+
+---
+## **3. The `Option<T>` Enum and Why Rust Has No `null`**
+- `Option<T>` represents **either Some(T) (a value) or None (no value)**.
+- Prevents **null-related crashes** common in other languages.
+
+### **Example: Using `Option<T>`**
+```rust
+let some_number = Some(5);
+let absent_number: Option<i32> = None;
+```
+✔ **Rust does not allow using `Option<T>` directly in operations**, forcing explicit handling:
+```rust
+let x: i8 = 5;
+let y: Option<i8> = Some(5);
+let sum = x + y; // ❌ ERROR: Cannot add i8 and Option<i8>
+```
+✔ **To use an `Option<T>`, convert it using `match` or `unwrap_or()`:**
+```rust
+let value = y.unwrap_or(0); // If y is Some(5), value = 5; if None, value = 0
+```
+
+---
+## **4. The `match` Control Flow Construct**
+- `match` compares a value **against multiple patterns** and executes code based on the first match.
+- Rust **ensures all cases are handled** (exhaustiveness).
+
+### **Example: `match` with a Coin Enum**
+```rust
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+✔ If `coin` is `Coin::Penny`, the function **returns `1`**.  
+✔ The `_` wildcard pattern can **handle all remaining cases**:
+```rust
+match dice_roll {
+    3 => add_fancy_hat(),
+    7 => remove_fancy_hat(),
+    _ => move_player(dice_roll),
+}
+```
+✔ **Extracting data from an enum variant using `match`**:
+```rust
+match coin {
+    Coin::Quarter(state) => println!("State quarter from {:?}!", state),
+    _ => println!("Regular coin"),
+}
+```
+
+---
+## **5. `if let`: A Concise Alternative to `match`**
+- `if let` is **syntax sugar for `match`** when handling **only one variant**.
+- Reduces **boilerplate code** when the other variants can be ignored.
+
+### **Example: `match` vs. `if let`**
+```rust
+// Using match (verbose)
+match config_max {
+    Some(max) => println!("Max is {max}"),
+    _ => (),
+}
+
+// Using if let (concise)
+if let Some(max) = config_max {
+    println!("Max is {max}");
+}
+```
+✔ `if let` is **shorter** and **more readable** when only **one pattern matters**.
+✔ Use `if let ... else` if you need to handle the **other cases**:
+```rust
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {:?}!", state);
+} else {
+    count += 1;
+}
+```
+
+---
+## **6. Key Takeaways from Chapter 6**
+✅ **Enums provide a way to define a type with multiple possible variants.**  
+✅ **Enums can store different types of data inside each variant.**  
+✅ **Rust’s `Option<T>` replaces `null`, preventing common errors.**  
+✅ **`match` ensures exhaustive handling of all cases, improving reliability.**  
+✅ **Use `if let` when matching only one variant for cleaner code.**  
+✅ **Enums + `match` are a powerful combination for handling different cases in a structured way.**
