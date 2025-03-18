@@ -16,8 +16,8 @@
    - [Dangling References](#dangling-references-in-rust)
    - [The Slice Type](#the-slice-type-in-rust)
    - [Chapter 4 Summary](#chapter-4-summary-ownership-borrowing-references-and-slices)
-
----
+5. [Chapter 5 - Structs in Rust](#chapter-5---structs-in-rust)
+6. [Chaper 6 - Enums](#chapter-6---enums)
 
 ## Chapter 1: Rust Basics
 
@@ -1604,7 +1604,6 @@ fn build_user(email: String, username: String) -> User {
 ✔ Uses **field init shorthand**—instead of `email: email`, we can just write `email`.
 ✔ This makes code **more concise and readable**.
 
----
 ## **Using Struct Update Syntax**
 Sometimes, we want to **create a new struct instance** based on an existing one, changing only some fields. Instead of manually copying each field, we can use **struct update syntax**.
 
@@ -1620,7 +1619,7 @@ fn main() {
 
     let user2 = User {
         email: String::from("another@example.com"),
-        ..user1 // ✅ Copies remaining fields from `user1`
+        ..user1 // ✅ Copies remaining fields from `user1` using struct update syntax
     };
 }
 ```
@@ -2135,10 +2134,819 @@ impl Rectangle {
 | **Multiple `impl` Blocks** | Allowed, useful for organizing large structs. |
 
 ---
+## Chapter 5: Summary
 
-## **🚀 Why Are Methods Important?**
+## **Key Takeaways from Structs in Rust**
+
+### **1. What Are Structs?**
+- Structs **group related data together** under a single name.
+- Unlike tuples, struct fields are **named**, improving code clarity.
+- Each struct is a **custom type**.
+- Fields can have **different types** or the same type.
+
+### **2. Why Use Structs Instead of Tuples?**
+✔ Structs provide **named fields**, making code more readable.
+✔ Field **order doesn’t matter** when creating instances.
+✔ They allow **self-documenting** code.
+✔ Fields are accessed by **name**, not index.
+
+---
+## **3. Defining and Instantiating Structs**
+- Defined using the `struct` keyword, followed by named fields.
+- Example:
+  ```rust
+  struct User {
+      active: bool,
+      username: String,
+      email: String,
+      sign_in_count: u64,
+  }
+  ```
+- Instances are created using `{}`:
+  ```rust
+  let user1 = User {
+      active: true,
+      username: String::from("user1"),
+      email: String::from("user1@example.com"),
+      sign_in_count: 1,
+  };
+  ```
+- Fields are accessed with **dot notation** (`user1.email`).
+- **Mutability applies to the whole struct instance**, not individual fields.
+
+  ```rust
+  let mut user1 = User {
+      active: true,
+      username: String::from("user1"),
+      email: String::from("user1@example.com"),
+      sign_in_count: 1,
+  };
+  ```
+
+---
+## **4. Struct Update Syntax**
+- Creates a new struct based on an existing one.
+- Uses `..existing_instance` to copy remaining fields.
+- Example:
+  ```rust
+  let user2 = User {
+      email: String::from("user2@example.com"),
+      ..user1
+  };
+  ```
+- Moves non-`Copy` fields (like `String`), invalidating the original instance.
+- `Copy` types (e.g., `bool`, `u64`) remain accessible.
+
+---
+## **5. Tuple Structs and Unit-Like Structs**
+- **Tuple Structs**:
+  ```rust
+  struct Color(i32, i32, i32);
+  struct Point(i32, i32, i32);
+  ```
+  ✔ Useful when naming fields isn't necessary.
+  ✔ Different struct types, even if fields have the same types.
+  
+- **Unit-Like Structs**:
+  ```rust
+  struct AlwaysEqual;
+  ```
+  ✔ Used for **traits** or **marker types** without stored data.
+
+---
+## **6. Debugging Structs (`#[derive(Debug)]`)**
+- Rust doesn’t allow printing structs by default.
+- Add `#[derive(Debug)]` to enable `println!("{:?}", struct_instance);`.
+- Use `:#?` for pretty formatting.
+- The `dbg!` macro prints expressions **with file & line number**.
+
+---
+## **7. Methods in Structs**
+- Defined in an `impl` block, using `self` to reference the instance.
+- Example:
+  ```rust
+  impl Rectangle {
+      fn area(&self) -> u32 {
+          self.width * self.height
+      }
+  }
+  ```
+✔ `&self` means **borrow immutably**.
+✔ `&mut self` allows **modification**.
+✔ `self` **takes ownership**.
+
+---
+## **8. Associated Functions (`Self` & Constructors)**
+- Methods without `self` are called **associated functions**.
+- Example:
+  ```rust
+  impl Rectangle {
+      fn square(size: u32) -> Self {
+          Self { width: size, height: size }
+      }
+  }
+  ```
+- Called using `Rectangle::square(10);` (not on an instance).
+
+---
+## **9. Multiple `impl` Blocks**
+✔ Methods can be split into multiple `impl` blocks for better organization.
+✔ Useful when implementing **traits**.
+
+---
+## **📌 Final Summary**
+| Feature | Description |
+|---------|------------|
+| **Structs** | Custom types with named fields |
+| **Tuple Structs** | Structs without named fields |
+| **Unit-Like Structs** | Structs without fields, used as markers |
+| **Dot Notation** | Access fields using `.` |
+| **Struct Update Syntax** | Creates new instances by copying existing fields (`..`) |
+| **Debugging (`Debug` Trait)** | Enables struct printing with `#[derive(Debug)]` |
+| **Methods (`impl`)** | Define behavior associated with a struct |
+| **Self in Methods** | `&self` (borrow), `&mut self` (mut borrow), `self` (ownership) |
+| **Associated Functions** | Methods without `self` (e.g., constructors) |
+| **Multiple `impl` Blocks** | Helps organize large structs |
+
+🚀 **Structs in Rust provide a powerful way to model real-world data while ensuring clarity, ownership, and safety.**
+
+
 - **Organize related functionality inside structs**.
 - **Improve readability & encapsulation**.
 - **Method syntax is ergonomic and intuitive**.
 - **Allow struct-specific behavior (e.g., constructors, calculations, checks)**.
+
+# Chapter 6: Enums in Rust
+
+## **Defining an Enum**
+Structs allow grouping related fields together, but **enums** allow defining a **type with a set of possible values**. An enum ensures that a value is **one of** a predefined set of options.
+
+For example, an `IpAddr` can be either IPv4 or IPv6, but **not both at the same time**. Since an enum can only be one of its variants at a time, it is the perfect data structure for representing such cases.
+
+### **Example: Defining an Enum for IP Addresses**
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+```
+- `IpAddrKind` is a **custom data type** with two variants: `V4` and `V6`.
+- These variants are **namespaced** under `IpAddrKind`.
+
+### **Creating Instances of an Enum**
+```rust
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;
+```
+✔ The `::` syntax **associates a variant with its enum type**. Both `four` and `six` are of type `IpAddrKind`.
+
+### **Using Enums in Functions**
+Since `IpAddrKind` is now a type, we can use it as a function parameter:
+```rust
+fn route(ip_kind: IpAddrKind) {}
+
+route(IpAddrKind::V4);
+route(IpAddrKind::V6);
+```
+✔ This allows handling both variants in a **single function**.
+
+---
+## **Enums vs Structs for Storing Data**
+The `IpAddrKind` enum only defines the **type** of IP address but does not store the actual IP address itself. We could try solving this using a **struct**:
+
+### **Storing IP Addresses Using a Struct**
+```rust
+struct IpAddr {
+    kind: IpAddrKind,
+    address: String,
+}
+
+let home = IpAddr {
+    kind: IpAddrKind::V4,
+    address: String::from("127.0.0.1"),
+};
+
+let loopback = IpAddr {
+    kind: IpAddrKind::V6,
+    address: String::from("::1"),
+};
+```
+✔ Here, we store **both** the type (`kind`) and the actual address (`address`).
+✔ However, **this approach is redundant** since the `kind` field determines what type of address the `address` field contains.
+
+---
+
+Here’s a comparison of **Enums vs. Structs** along with guidelines on when to use each:
+
+---
+
+# **Enums vs. Structs in Rust**
+Rust provides **structs** and **enums** for defining custom types. While both can group related data, they serve different purposes.
+
+## **Key Differences Between Enums and Structs**
+| Feature        | Structs | Enums |
+|---------------|--------|------|
+| **Purpose** | Groups related fields together | Represents one of multiple predefined variants |
+| **Data Storage** | Can hold multiple fields with different types | Each variant can have different types of associated data |
+| **Exhaustiveness** | No need to check field types explicitly | Must handle all possible variants in a `match` expression |
+| **Flexibility** | Best when all fields are always required | Best when a value can only be one of several options |
+| **Memory Usage** | Always stores all fields | Stores only the data for the current variant |
+
+---
+
+## **When to Use Structs**
+Structs are best when:
+- You need to **group related fields together** to form a composite type.
+- Each instance **must contain all fields** (e.g., a `Rectangle` with `width` and `height`).
+- You want **clear field names** for documentation and readability.
+  
+### **Example: Using a Struct for a User Profile**
+```rust
+struct User {
+    username: String,
+    email: String,
+    active: bool,
+    sign_in_count: u64,
+}
+
+let user1 = User {
+    username: String::from("rustacean"),
+    email: String::from("user@example.com"),
+    active: true,
+    sign_in_count: 1,
+};
+```
+✔ **Why a Struct?**  
+- `username` and `email` are **always required**.
+- `sign_in_count` should be **tracked for all users**.
+
+---
+
+## **When to Use Enums**
+Enums are best when:
+- A value must be **one of a predefined set of options**.
+- Different variants may store **different types of data**.
+- You need **pattern matching** to enforce exhaustive handling.
+
+### **Example: Representing an IP Address with an Enum**
+```rust
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+let loopback = IpAddr::V6(String::from("::1"));
+```
+✔ **Why an Enum?**  
+- An IP address can be **either** IPv4 or IPv6, never both.
+- Different variants store **different types of data** (`V4` uses four `u8` values, `V6` stores a `String`).
+- `match` ensures **all cases are handled** safely.
+
+---
+
+## **Structs vs. Enums: Real-World Use Cases**
+| Use Case | Recommended Type |
+|----------|----------------|
+| User Profile (name, email, active status) | **Struct** |
+| Different Shapes (Circle, Rectangle, Triangle) | **Enum** |
+| Storing Database Records (id, fields, metadata) | **Struct** |
+| Handling Network Protocols (TCP, UDP, HTTP) | **Enum** |
+| Sensor Data with Fixed Fields (temperature, humidity) | **Struct** |
+| Parsing Input Commands (Start, Stop, Pause) | **Enum** |
+
+---
+
+## **Summary**
+🚀 **Use Structs** when all fields are required together.  
+🚀 **Use Enums** when only **one** variant can be active at a time.  
+🚀 **Use Structs inside Enums** when variants need **additional structured data**.
+
+## **More Concise: Storing Data Directly in an Enum**
+Instead of using a struct, we can **attach data directly to enum variants**:
+```rust
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+let home = IpAddr::V4(String::from("127.0.0.1"));
+let loopback = IpAddr::V6(String::from("::1"));
+```
+✔ Each variant now **stores its associated data directly**, eliminating the need for an extra struct.
+✔ `IpAddr::V4(String)` acts as a **constructor function** that automatically creates an `IpAddr` instance.
+
+---
+## **Enums Can Hold Different Types of Data**
+A major advantage of enums over structs is that **each variant can store different types of data**.
+
+### **Example: Storing Different Data Types**
+```rust
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+let loopback = IpAddr::V6(String::from("::1"));
+```
+✔ `V4` stores **four `u8` numbers**, while `V6` stores a **String**.
+✔ This **would not be possible** with a single struct.
+
+---
+## **Standard Library Definition of `IpAddr`**
+Rust's standard library includes a built-in definition for `IpAddr`, similar to our custom one:
+```rust
+struct Ipv4Addr {
+    // Internal fields
+}
+
+struct Ipv6Addr {
+    // Internal fields
+}
+
+enum IpAddr {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
+```
+✔ Instead of a `String`, the standard library uses **dedicated structs** (`Ipv4Addr` and `Ipv6Addr`) for each variant.
+✔ This showcases that **enums can store complex data types**, including other structs or enums.
+
+---
+## **Enums Can Store Complex Variants**
+We can store different amounts and types of data in enum variants.
+
+### **Example: `Message` Enum with Various Data Types**
+```rust
+enum Message {
+    Quit,                      // No data
+    Move { x: i32, y: i32 },   // Named fields (struct-like)
+    Write(String),             // Tuple-like
+    ChangeColor(i32, i32, i32) // Tuple-like
+}
+```
+✔ `Quit`: No associated data.
+✔ `Move`: Stores named fields (`x` and `y`), similar to a struct.
+✔ `Write`: Stores a single `String`.
+✔ `ChangeColor`: Stores three `i32` values.
+
+This is equivalent to defining multiple struct types:
+```rust
+struct QuitMessage; // Unit struct
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // Tuple struct
+struct ChangeColorMessage(i32, i32, i32); // Tuple struct
+```
+✔ Using separate structs makes it **harder to process all message types together**.
+✔ An **enum groups related types together**, simplifying handling in functions.
+
+---
+## **Defining Methods on Enums**
+Just like structs, **enums can have methods** using `impl` blocks.
+
+### **Example: Adding a Method to `Message` Enum**
+```rust
+impl Message {
+    fn call(&self) {
+        // Method body here
+    }
+}
+
+let m = Message::Write(String::from("hello"));
+m.call();
+```
+✔ Methods use `self` to refer to the **specific variant** that the method is called on.
+✔ `Message::Write(String::from("hello"))` is stored in `m`.
+✔ `m.call()` invokes the `call` method.
+
+---
+## **Key Takeaways**
+✔ **Enums allow defining a type with multiple possible values**.
+✔ **Variants are namespaced** under the enum type (`EnumName::Variant`).
+✔ **Enums can store associated data**, eliminating the need for extra structs.
+✔ **Each variant can store different types of data**, which is not possible with structs.
+✔ **Enums in Rust are flexible**, even allowing methods like structs.
+✔ **Rust’s standard library provides common enums**, such as `IpAddr`, for efficiency.
+
+
+# The `Option` Enum and Its Advantages Over Null Values
+
+## **Why Does Rust Use `Option<T>` Instead of `null`?**
+In many programming languages, `null` is used to represent the absence of a value. However, `null` is known for causing **unexpected errors and system crashes** when developers assume a value is present but it is actually `null`.
+
+### **The Billion-Dollar Mistake**
+Tony Hoare, the inventor of `null`, described it as a **“billion-dollar mistake”** because it has led to countless errors, vulnerabilities, and system failures over decades of software development.
+
+### **Problems with `null` in Other Languages**
+- **Unintentional Errors:** Trying to use a `null` value where an actual value is expected often leads to crashes.
+- **Hidden Bugs:** Forgetting to check for `null` can cause runtime exceptions.
+- **Lack of Type Safety:** Since `null` can be assigned to variables of any type, mistakes are harder to catch at compile time.
+
+Rust solves these issues by **not having `null` at all**. Instead, Rust provides the `Option<T>` enum, which explicitly represents either **Some value** or **None (absence of a value)**.
+
+---
+## **What is `Option<T>`?**
+Rust provides the `Option<T>` enum to handle cases where a value **might** or **might not** exist. It is defined as follows:
+
+```rust
+enum Option<T> {
+    None,       // Represents absence of a value
+    Some(T),    // Holds a value of type T
+}
+```
+✔ `Option<T>` is **generic**, meaning it can hold any type (`T`).
+✔ `Some(T)` stores an actual value of type `T`.
+✔ `None` represents the absence of a value.
+
+Unlike `null`, `Option<T>` forces developers to **explicitly handle** the case where a value might be missing, preventing many common bugs.
+
+### **Using `Option<T>` in Rust**
+```rust
+let some_number = Some(5);
+let some_char = Some('e');
+let absent_number: Option<i32> = None;
+```
+- `some_number` has the type `Option<i32>`, and it contains a value `5`.
+- `some_char` has the type `Option<char>` and contains `'e'`.
+- `absent_number` has the type `Option<i32>`, but it contains `None`, meaning no value is available.
+
+### **How Does `Option<T>` Prevent `null`-Related Bugs?**
+One key benefit of `Option<T>` is that it **cannot be used directly as a normal value**. This prevents **accidental usage of an absent value**, which is a common issue in languages with `null`.
+
+Consider this incorrect Rust code:
+```rust
+let x: i8 = 5;
+let y: Option<i8> = Some(5);
+let sum = x + y; // ❌ ERROR: Cannot add i8 and Option<i8>
+```
+#### **Compiler Error Output:**
+```
+error[E0277]: cannot add `Option<i8>` to `i8`
+--> src/main.rs:5:17
+  |
+5 | let sum = x + y;
+  |                 ^ no implementation for `i8 + Option<i8>`
+```
+This error occurs because Rust **prevents you from assuming** that an `Option<i8>` is automatically a valid `i8`. Instead, you must explicitly handle both cases (`Some` or `None`).
+
+---
+## **How to Extract Values from `Option<T>`?**
+Since Rust does not allow direct operations on `Option<T>`, you need to **convert it into a normal value** before using it. Rust provides multiple ways to handle this:
+
+### **1. Using `match` to Handle Both `Some` and `None`**
+The `match` expression allows us to check for both variants and safely handle the absence of a value:
+```rust
+fn main() {
+    let maybe_number = Some(10);
+
+    match maybe_number {
+        Some(n) => println!("Number: {}", n), // Extracts the value if Some
+        None => println!("No value found"),    // Handles the None case
+    }
+}
+```
+✔ If `maybe_number` contains `Some(10)`, it prints `Number: 10`.
+✔ If `maybe_number` is `None`, it prints `No value found`.
+
+### **2. Using `if let` for a Simpler Check**
+If you only care about handling the `Some` case, you can use `if let`:
+```rust
+if let Some(n) = maybe_number {
+    println!("Number: {}", n);
+}
+```
+✔ This is a **shortcut** for when you only need to process `Some` values.
+
+### **3. Providing a Default Value with `unwrap_or`**
+If you need a value and want to use a **default** when `None`, use `unwrap_or`:
+```rust
+let value = maybe_number.unwrap_or(0); // Uses 10 if Some(10), otherwise 0
+println!("Value: {}", value);
+```
+✔ If `maybe_number` is `Some(10)`, `value` becomes `10`.
+✔ If `maybe_number` is `None`, `value` defaults to `0`.
+
+### **4. Using `unwrap` (Unsafe, Not Recommended)**
+`unwrap()` directly extracts the value but **panics if `None` is encountered**:
+```rust
+let value = maybe_number.unwrap(); // Crashes if maybe_number is None!
+```
+🚨 **Avoid `unwrap()` unless you're 100% sure `None` will never occur.**
+
+---
+## **Why `Option<T>` is Safer Than `null`**
+| Feature            | `null` in Other Languages | `Option<T>` in Rust |
+|-------------------|-------------------------|---------------------|
+| **Type Safety**   | Any variable can be `null`, leading to errors | `Option<T>` is a distinct type, preventing misuse |
+| **Compiler Checks** | Must manually check for `null` | Rust **forces** you to handle `None` |
+| **Error Handling** | Forgetting to check for `null` causes crashes | Requires explicit handling of missing values |
+| **Default Values** | Can assign defaults manually | `unwrap_or` provides a built-in safe default |
+| **Code Readability** | `null` checks are scattered | Explicit `Some`/`None` cases improve clarity |
+
+By requiring you to **explicitly handle the absence of a value**, Rust prevents many common programming errors and improves code reliability.
+
+---
+## **Conclusion: The Power of `Option<T>`**
+✔ `Option<T>` replaces `null` by making missing values **explicit**.
+✔ Rust **prevents accidental use** of an absent value by enforcing type safety.
+✔ `match`, `if let`, and `unwrap_or` allow **safe extraction** of values.
+✔ `Option<T>` forces you to **think about absence cases**, reducing bugs.
+
+# The `match` Control Flow Construct in Rust
+
+## **What is `match`?**
+Rust provides an incredibly powerful control flow construct called `match`, which allows you to **compare a value against multiple patterns** and execute code based on which pattern matches.
+
+### **How Does `match` Work?**
+Think of `match` like a **coin-sorting machine**:
+- Each coin (value) goes down a track with different-sized holes.
+- It **falls through the first hole that fits**.
+- Similarly, in `match`, a value goes through each pattern, and when a match is found, the associated block of code executes.
+
+### **Why is `match` Useful?**
+- **Pattern Matching:** Supports matching against literals, variables, wildcards (`_`), and more.
+- **Exhaustiveness:** Rust **ensures all possible cases are handled**, reducing errors.
+- **Readability & Maintainability:** Provides a structured way to handle different conditions.
+
+---
+## **Using `match` with Enums**
+Let’s say we want to determine the value (in cents) of different US coins. We can define an enum and use `match` to return the correct value.
+
+### **Example: Matching on a `Coin` Enum**
+```rust
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+✔ **How It Works:**
+- The `match` expression takes `coin` as input.
+- It **checks against each possible variant** of `Coin`.
+- If a match is found, the corresponding value is returned.
+
+### **Code Explanation:**
+- `match coin {}`: The `match` expression evaluates `coin`.
+- `Coin::Penny => 1,`: If `coin` is a penny, return `1`.
+- **No `default` case is needed** because Rust enforces handling all possible variants of the enum.
+
+---
+## **Adding Multiple Lines in Match Arms**
+By default, a `match` arm executes a **single expression**. If you need **multiple lines**, use `{}`:
+
+```rust
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => {
+            println!("Lucky penny!");
+            1
+        },
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+✔ If `coin` is `Coin::Penny`, the function **prints a message** before returning `1`.
+✔ The **last expression inside `{}` is the return value**.
+
+---
+## **Matching Enum Variants with Data**
+Some enum variants **contain associated data**. `match` can also extract this data for use in the matching arm.
+
+### **Example: Matching a Quarter’s State**
+Let’s say U.S. quarters have different designs for each state. We modify our `Coin` enum to store the **state name** inside `Quarter`:
+
+```rust
+#[derive(Debug)]
+enum UsState {
+    Alabama,
+    Alaska,
+    // ... other states
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        }
+    }
+}
+```
+✔ If `Coin::Quarter(state)` is matched, `state` binds to the quarter’s **state value**.
+✔ We can **use the extracted `state` value inside the match arm**.
+
+### **Example Usage:**
+```rust
+value_in_cents(Coin::Quarter(UsState::Alaska));
+```
+✔ This will print: `State quarter from Alaska!`
+✔ This technique is useful for extracting **associated data inside an enum**.
+
+---
+## **Using `match` with `Option<T>`**
+The `Option<T>` enum represents a value that might be **some value** (`Some(T)`) or **none** (`None`).
+
+### **Example: Adding 1 to an `Option<i32>`**
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+```
+✔ If `x` is `Some(i)`, we return `Some(i + 1)`.
+✔ If `x` is `None`, we **return `None`** without trying to increment a non-existent value.
+
+### **Example Calls:**
+```rust
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+✔ `six` now holds `Some(6)`.
+✔ `none` remains `None`.
+
+---
+## **The Importance of Exhaustiveness in `match`**
+Rust requires that `match` expressions **cover all possible cases**. If we forget to handle a case, Rust **won’t compile the code**.
+
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        Some(i) => Some(i + 1),
+    }
+}
+```
+🚨 **Compiler Error:**
+```
+error[E0004]: non-exhaustive patterns: `None` not covered
+```
+✔ The solution is to **always handle all possible cases**:
+```rust
+match x {
+    Some(i) => Some(i + 1),
+    None => None,
+}
+```
+✔ This prevents missing cases, making Rust programs **safer and more reliable**.
+
+---
+## **Catch-All Patterns with `_`**
+If you don’t need to handle every case explicitly, use a **catch-all pattern (`_`)**:
+
+```rust
+let dice_roll = 9;
+match dice_roll {
+    3 => add_fancy_hat(),
+    7 => remove_fancy_hat(),
+    _ => move_player(dice_roll),
+}
+```
+✔ The `_` pattern **matches all remaining cases**.
+✔ If `dice_roll` is `3`, it calls `add_fancy_hat()`.
+✔ If `dice_roll` is `7`, it calls `remove_fancy_hat()`.
+✔ Otherwise, it calls `move_player(dice_roll)`.
+
+### **Ignoring the Value with `_`**
+If you don’t need to use the value, just use `_`:
+```rust
+match dice_roll {
+    3 => add_fancy_hat(),
+    7 => remove_fancy_hat(),
+    _ => (), // Do nothing
+}
+```
+✔ This explicitly tells Rust we’re **intentionally ignoring** other values.
+
+---
+## **Key Takeaways**
+✔ `match` **compares a value against multiple patterns** and executes code accordingly.  
+✔ **All cases must be handled**—Rust enforces exhaustiveness.  
+✔ Can **extract values from enum variants** (e.g., `Option<T>`, `Coin::Quarter(state)`).  
+✔ **Use `_` as a catch-all pattern** to handle remaining cases.  
+✔ `match` works seamlessly with Rust enums like `Option<T>`, ensuring **safe handling of missing values**.  
+
+# Concise Control Flow with `if let`
+
+## **What is `if let`?**
+Rust provides a more concise way to **match against a single pattern** using `if let`. This is useful when you only care about one specific match case and want to ignore everything else.
+
+Instead of using a full `match` expression when only **one pattern matters**, `if let` allows us to reduce boilerplate code and improve readability.
+
+---
+## **`match` vs. `if let`**
+Consider the following example where we have a configuration value stored in an `Option<u8>`. We want to execute code **only if the value is `Some`**.
+
+### **Using `match` (Verbose Approach)**
+```rust
+let config_max = Some(3u8);
+
+match config_max {
+    Some(max) => println!("The maximum is configured to be {max}"),
+    _ => (), // Required to satisfy `match`, even if we do nothing
+}
+```
+✔ The `_ => ()` is **required** in `match` to handle all cases, even though we don’t do anything for `None`.
+
+### **Using `if let` (Concise Approach)**
+```rust
+let config_max = Some(3u8);
+
+if let Some(max) = config_max {
+    println!("The maximum is configured to be {max}");
+}
+```
+✔ `if let` removes the need for `_ => ()`, making the code **simpler and cleaner**.
+✔ Works exactly like `match`, but **only for the `Some` case**.
+✔ If `config_max` is `None`, the code inside `{}` **does not run**.
+
+---
+## **How `if let` Works**
+- `if let` takes a **pattern** and an **expression** separated by `=`.
+- If the expression **matches the pattern**, the code inside `{}` executes.
+- If the expression **doesn’t match**, the block **is skipped** (instead of requiring an explicit `_ => ()` case like `match`).
+
+### **Syntax:**
+```rust
+if let Pattern = Expression {
+    // Code to execute if the pattern matches
+}
+```
+
+---
+## **Trade-offs Between `match` and `if let`**
+| Feature        | `match` | `if let` |
+|---------------|--------|---------|
+| Handles multiple cases? | ✅ Yes | ❌ No, only one case |
+| Enforces exhaustive checking? | ✅ Yes | ❌ No |
+| Verbosity | 🛑 More code | ✅ Less code |
+| Readability | 🚨 Can be cluttered for simple cases | ✅ Simpler for single cases |
+| Error Prevention | ✅ Ensures all cases are handled | ❌ Might miss cases if not careful |
+
+🚀 **Use `match` when handling multiple cases.**
+✅ **Use `if let` when handling only one case and ignoring the rest.**
+
+---
+## **Using `if let` with `else`**
+If we need to **handle the unmatched cases**, we can use `else`:
+
+### **Example: Counting Non-Quarter Coins**
+```rust
+let mut count = 0;
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {:?}!", state);
+} else {
+    count += 1;
+}
+```
+✔ If `coin` is a `Quarter`, it prints the state.
+✔ If `coin` is **anything else**, `count` is incremented.
+✔ This is **equivalent** to the `match` version:
+```rust
+match coin {
+    Coin::Quarter(state) => println!("State quarter from {:?}!", state),
+    _ => count += 1,
+}
+```
+✔ `if let` eliminates the need for `_ =>`, making the code cleaner.
+
+---
+## **Final Thoughts**
+### **When to Use `match`?**
+- When you **need to handle multiple patterns**.
+- When **exhaustive matching** is important.
+- When you **must account for all cases** explicitly.
+
+### **When to Use `if let`?**
+- When you **only care about one pattern**.
+- When you want **concise and readable** code.
+- When ignoring other cases **is acceptable**.
+
 
