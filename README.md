@@ -5,69 +5,77 @@
 1. [Chapter 1: Rust Basics](#chapter-1-rust-basics)
 2. [Chapter 2: Variables and Mutability](#chapter-2-variables-and-mutability)
    - [Data Types](#data-types)
-3. [Functions and Control Flow](#functions-and-control-flow)
-4. [Chapter 4 - Borrowing and Ownership](#chapter-4---borrowing-and-ownership)
+3. [Chapter 3: Functions and Control Flow](#chapter-3-functions-and-control-flow)
+4. [Chapter 4: Borrowing and Ownership](#chapter-4-borrowing-and-ownership)
    - [The Stack and Heap](#the-stack-and-heap)
-   - [Move, Copy, and Clone](#variables-and-data-move-copy-and-clone-in-rust)
-   - [Ownership and Functions](#ownership-and-functions-in-rust)
+   - [Move, Copy, and Clone](#move-copy-and-clone)
+   - [Ownership and Functions](#ownership-and-functions)
    - [Rules of Borrowing and Ownership](#rules-of-borrowing-and-ownership)
-   - [Referencing and Borrowing](#referencing-and-borrowing-in-rust)
-   - [Mutable References and Borrowing Rules](#mutable-references-and-borrowing-rules-in-rust)
-   - [Dangling References](#dangling-references-in-rust)
-   - [The Slice Type](#the-slice-type-in-rust)
-   - [Chapter 4 Summary](#chapter-4-summary-ownership-borrowing-references-and-slices)
-5. [Chapter 5 - Structs in Rust](#chapter-5---structs-in-rust)
-6. [Chaper 6 - Enums](#chapter-6---enums)
+   - [Referencing and Borrowing](#referencing-and-borrowing)
+   - [Mutable References and Borrowing Rules](#mutable-references-and-borrowing-rules)
+   - [Dangling References](#dangling-references)
+   - [The Slice Type](#the-slice-type)
+   - [Chapter 4 Summary](#chapter-4-summary)
+5. [Chapter 5: Structs in Rust](#chapter-5-structs-in-rust)
+6. [Chapter 6: Enums and Pattern Matching](#chapter-6-enums-and-pattern-matching)
 
-## Chapter 1: Rust Basics
+Here's the **corrected** Chapter 1 in `README.md` format with all the necessary improvements applied:  
 
-### File Naming
-Rust projects encourage a consistent naming style using **snake_case**.  
+```md
+# Chapter 1: Rust Basics
+
+## File Naming
+Rust enforces a consistent naming style using **snake_case** for filenames, functions, and variables, following the community's conventions to improve readability and maintain consistency with built-in libraries.  
+
 - **Why?**  
   - Snake case (e.g., `my_file.rs`) is preferred because it improves readability and aligns with Rust’s conventions for variables and function names.  
   - Consistency in naming helps when using tools like linters and formatters, which expect a uniform style across files.  
-- **Tip:** Avoid using camelCase (e.g., `myFile.rs`) since it does not match the idiomatic style in Rust and may lead to confusion when collaborating with other developers.
+- **Tip:** Avoid using camelCase (e.g., `myFile.rs`) since it does not match the idiomatic style in Rust and may lead to confusion when collaborating with other developers.  
 
-### Formatting Code
-Proper formatting improves code readability and maintainability.
+## Formatting Code
+Proper formatting improves code readability and maintainability.  
+
 - **Tool:**  
-  - Rust provides the `rustfmt` tool to automatically format your code.
+  - Rust provides the `rustfmt` tool to automatically format your code.  
 - **Usage:**  
   ```bash
   rustfmt main.rs
   ```
 - **Explanation:**  
-  - This command automatically applies Rust’s style guidelines, ensuring that your code has consistent indentation, spacing, and line breaks. This not only makes your code look neat but also reduces the cognitive load when reading or reviewing code.
+  - This command automatically applies Rust’s style guidelines, ensuring that your code has consistent indentation, spacing, and line breaks. This not only makes your code look neat but also reduces the cognitive load when reading or reviewing code.  
 
-### Macros
-Macros in Rust differ from functions and have unique behavior.
+## Macros
+Macros in Rust differ from functions and have unique behavior.  
+
 - **Key Point:**  
-  - Macros are identified by the exclamation mark (`!`) and are expanded at compile time.
-- **Example:**
+  - Macros are identified by the exclamation mark (`!`) and are expanded at compile time.  
+- **Example:**  
   ```rust
   println!("Hello, world!");  // println! is a macro
   ```
 - **Explanation:**  
-  - Unlike regular functions, macros can accept a variable number of arguments and perform meta-programming tasks. They allow you to generate code during compilation, which can lead to more efficient runtime performance. However, they can also make error messages less straightforward, so understanding their expansion is crucial.
+  - Unlike regular functions, macros can accept a variable number of arguments and perform meta-programming tasks. They allow you to generate code during compilation, which can lead to more efficient runtime performance. However, they can also make error messages less straightforward, so understanding their expansion is crucial.  
 
-### Cargo – Rust’s Package Manager
-Cargo is an essential tool in Rust that handles many aspects of project management.
-- **Comparison:**  
-  - Think of Cargo as similar to `package.json` in JavaScript, but more powerful since it not only manages dependencies but also compiles your code and runs tests.
+## Cargo – Rust’s Package Manager
+Cargo is Rust’s package manager and build system, comparable to `npm` in JavaScript or `pip` in Python. However, unlike those, Cargo also handles compilation, testing, and project metadata management in a unified tool.  
+
 - **Benefits:**  
-  - It streamlines building, testing, and managing your project, making it easier to maintain code and share it with others.
+  - It streamlines building, testing, and managing your project, making it easier to maintain code and share it with others.  
 
-### Crates vs Packages
-Understanding the distinction between a crate and a package is fundamental.
+## Crates vs Packages
+Understanding the distinction between a crate and a package is fundamental.  
+
 - **Crate:**  
-  - A single library or executable. For example, a crate might be a math library like `bigdecimal`.
+  - A crate is the smallest unit of code compilation in Rust. It can be either a **library crate** (for reuse) or a **binary crate** (executable program).  
 - **Package:**  
-  - A collection of one or more crates. A package can include both a library crate and one or more binary crates.
-- **Expanded Insight:**  
-  - This distinction helps organize your code, especially when your project grows. Packages allow you to bundle related functionality together while still keeping separate concerns isolated in different crates.
+  - A package is a collection of one or more crates. A package can include both a library crate and one or more binary crates.  
 
-### Common Cargo Commands
-Cargo provides a set of commands that make managing a Rust project straightforward:
+- **Expanded Insight:**  
+  - This distinction helps organize your code, especially when your project grows. Packages allow you to bundle related functionality together while still keeping separate concerns isolated in different crates.  
+
+## Common Cargo Commands
+Cargo provides a set of commands that make managing a Rust project straightforward:  
+
 ```bash
 cargo new my_app      # Creates a new Rust project with the standard directory structure.
 cargo build           # Compiles the project in debug mode.
@@ -76,10 +84,11 @@ cargo check           # Analyzes your code for errors without producing an execu
 cargo build --release # Builds an optimized binary suitable for production.
 ```
 - **Explanation:**  
-  - These commands help you quickly iterate on your code. For example, `cargo check` is particularly useful during development because it is faster than a full build, allowing you to catch errors early.
+  - These commands help you quickly iterate on your code. For example, `cargo check` is particularly useful during development because it is faster than a full build, allowing you to catch errors early.  
 
-### Project Structure (from `cargo new my_app`)
-When you create a new project using Cargo, it sets up a standard directory layout:
+## Project Structure (from `cargo new my_app`)
+When you create a new project using Cargo, it sets up a standard directory layout:  
+
 ```
 my_app/
 ├── Cargo.toml  # Contains project metadata, dependencies, and configuration.
@@ -92,17 +101,17 @@ my_app/
   [package]
   name = "hello_cargo"
   version = "0.1.0"
-  edition = "2024"
+  edition = "2021"
 
   [dependencies]
   ```
 - **Insight:**  
-  - This structure helps keep your project organized. `Cargo.toml` defines the project's identity and dependencies, while the `src/` directory contains your Rust source files. The `Cargo.lock` file ensures that your builds are reproducible by locking dependency versions.
+  - This structure helps keep your project organized. `Cargo.toml` defines the project's identity and dependencies, while the `src/` directory contains your Rust source files. The `Cargo.lock` file ensures that your builds are reproducible by locking dependency versions.  
 
 - **Compiled Output:**  
   - The compiled binaries are placed in:
     - `target/debug/` for regular builds.
-    - `target/release/` for optimized builds produced with `cargo build --release`.
+    - `target/release/` for optimized builds produced with `cargo build --release`.  
 
 ---
 
@@ -317,7 +326,7 @@ fn main() {
 
 ---
 
-## Functions and Control Flow
+## Chapter 3 Functions and Control Flow
 
 ### Functions & Parameters
 Functions in Rust encapsulate reusable code.
@@ -2276,7 +2285,7 @@ impl Rectangle {
 - **Method syntax is ergonomic and intuitive**.
 - **Allow struct-specific behavior (e.g., constructors, calculations, checks)**.
 
-# Chapter 6: Enums in Rust
+# Chapter 6: Enums and pattern matching in Rust
 
 ## **Defining an Enum**
 Structs allow grouping related fields together, but **enums** allow defining a **type with a set of possible values**. An enum ensures that a value is **one of** a predefined set of options.
@@ -2347,13 +2356,13 @@ let loopback = IpAddr {
 Rust provides **structs** and **enums** for defining custom types. While both can group related data, they serve different purposes.
 
 ## **Key Differences Between Enums and Structs**
-| Feature                                                | Structs | Enums |
-|---------------|--------                                          |------|
-| **Purpose** | Groups related fields together                     | Represents one of multiple predefined variants |
-| **Data Storage** | Can hold multiple fields with different types | Each variant can have different types of associated data |
-| **Exhaustiveness** | No need to check field types explicitly     | Must handle all possible variants in a `match` expression |
-| **Flexibility** | Best when all fields are always required       | Best when a value can only be one of several options |
-| **Memory Usage** | Always stores all fields                      | Stores only the data for the current variant |
+| Feature            |              Structs                               | Enums |
+|--------------------|--------                                            |------|
+| **Purpose**        | Groups related fields together                     | Represents one of multiple predefined variants |
+| **Data Storage**   | Can hold multiple fields with different types      | Each variant can have different types of associated data |
+| **Exhaustiveness** | No need to check field types explicitly            | Must handle all possible variants in a `match` expression |
+| **Flexibility**    | Best when all fields are always required           | Best when a value can only be one of several options |
+| **Memory Usage**    | Always stores all fields                          | Stores only the data for the current variant |
 
 ---
 
@@ -3086,3 +3095,784 @@ if let Coin::Quarter(state) = coin {
 ✅ **`match` ensures exhaustive handling of all cases, improving reliability.**  
 ✅ **Use `if let` when matching only one variant for cleaner code.**  
 ✅ **Enums + `match` are a powerful combination for handling different cases in a structured way.**
+
+# Chapter 7 - Managing Growing Projects with Packages, Crates, and Modules
+
+## **1. Introduction: Why Organize Code?**
+As Rust projects grow, managing code effectively becomes essential. Rust provides a **module system** that helps organize code into **packages, crates, and modules**. This system allows:
+- **Better code organization** through modularization.
+- **Encapsulation** of implementation details.
+- **Efficient code reuse** across multiple files and projects.
+- **Control over visibility and scope**, making APIs cleaner and safer.
+
+### **Key Terms in Rust’s Module System**
+| Feature | Purpose |
+|---------|---------|
+| **Package** | A collection of one or more crates with a `Cargo.toml` file. |
+| **Crate** | A compilation unit in Rust that can be a **binary** (executable) or **library** (reusable code). |
+| **Module** | A way to group related functionality within a crate. |
+| **Paths** | A way to **refer** to functions, structs, and modules in the project. |
+| **Scopes** | Control over what parts of the code can access certain items. |
+
+---
+## **2. Packages and Crates**
+A **crate** is the smallest unit of code compilation in Rust. A **package** is a collection of **one or more crates**.
+
+### **Binary Crates vs. Library Crates**
+| Type | Description |
+|------|-------------|
+| **Binary Crate** | Compiles to an **executable** (must contain a `main` function). |
+| **Library Crate** | A collection of reusable functions and modules (no `main` function). |
+
+### **Creating a New Package with Cargo**
+```sh
+$ cargo new my_project
+```
+This creates the following structure:
+```
+my_project
+├── Cargo.toml  # Package metadata
+└── src
+    └── main.rs # Crate root for the binary crate
+```
+- `Cargo.toml` defines **dependencies and settings**.
+- `src/main.rs` is the **crate root** for a binary crate.
+- To create a **library crate**, replace `main.rs` with `lib.rs`.
+
+### **Adding Multiple Binary Crates**
+To create multiple binary crates, add Rust files inside `src/bin/`:
+```
+my_project
+├── src
+│   ├── main.rs       # Binary crate (default)
+│   ├── bin
+│   │   ├── tool.rs   # Additional binary crate
+│   │   └── cli.rs    # Another binary crate
+```
+Each file inside `src/bin/` becomes **a separate binary crate**.
+
+---
+## **3. Modules: Organizing Code Inside a Crate**
+Modules allow **logical grouping** of functions, structs, and other definitions inside a crate.
+
+### **Declaring a Module**
+A module is declared using the `mod` keyword:
+```rust
+mod front_of_house {
+    mod hosting {
+        fn add_to_waitlist() {}
+    }
+}
+```
+- The **crate root** is `src/main.rs` (for binaries) or `src/lib.rs` (for libraries).
+- The **module tree** represents a hierarchy of modules.
+
+### **Module Tree Representation**
+```
+crate
+└── front_of_house
+    ├── hosting
+    │   └── add_to_waitlist
+    ├── seat_at_table
+    └── serving
+        ├── take_order
+        ├── serve_order
+        └── take_payment
+```
+- Modules act **like directories** inside a filesystem.
+- Each module can contain **submodules, functions, structs, and constants**.
+
+---
+## **4. Module File Structure in Rust**
+By default, Rust looks for module files in:
+| Declaration | File Location |
+|-------------|--------------|
+| `mod garden;` (in `src/lib.rs`) | `src/garden.rs` OR `src/garden/mod.rs` |
+| `mod vegetables;` (in `src/garden.rs`) | `src/garden/vegetables.rs` OR `src/garden/vegetables/mod.rs` |
+
+### **Example: Structuring a Library Crate**
+```
+restaurant
+├── Cargo.toml
+└── src
+    ├── lib.rs             # Crate root
+    ├── front_of_house.rs  # Module
+    ├── back_of_house
+    │   ├── kitchen.rs     # Submodule
+    │   └── staff.rs       # Submodule
+```
+Inside `lib.rs`, we declare:
+```rust
+mod front_of_house;
+mod back_of_house;
+```
+Rust will then **look for `front_of_house.rs` and `back_of_house.rs` files**.
+
+---
+## **5. Controlling Scope & Visibility with `pub`**
+By default, everything inside a module is **private**.
+
+### **Making Modules and Functions Public**
+```rust
+pub mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+```
+✔ `pub mod` makes the **module itself** public.
+✔ `pub fn` makes the **function** inside the module public.
+
+### **Accessing Public Functions**
+```rust
+crate::front_of_house::hosting::add_to_waitlist();
+```
+✔ The function must be **public (`pub`)** in every parent module for this to work.
+
+---
+## **6. Paths and the `use` Keyword**
+### **Absolute Paths** (From the crate root)
+```rust
+crate::front_of_house::hosting::add_to_waitlist();
+```
+✔ Starts with `crate::` and provides a **full path**.
+
+### **Relative Paths** (From the current module)
+```rust
+front_of_house::hosting::add_to_waitlist();
+```
+✔ Shorter but works only within the **same module**.
+
+### **Using `use` for Shorter Paths**
+```rust
+use crate::front_of_house::hosting;
+hosting::add_to_waitlist();
+```
+✔ `use` brings a **module or item into scope**, reducing repetition.
+✔ Instead of calling `crate::front_of_house::hosting::add_to_waitlist()`, we now call `hosting::add_to_waitlist()`.
+
+---
+## **Summary of Key Concepts**
+✔ **A package** contains one or more **crates** (Rust projects).  
+✔ **A crate** is the smallest compilation unit and can be a **binary or library**.  
+✔ **Modules** help **organize code** into separate sections.  
+✔ **Rust enforces privacy**: everything inside a module is private unless marked `pub`.  
+✔ **Absolute paths start from `crate::`**, while **relative paths depend on the current module**.  
+✔ **Use `use` to bring items into scope**, making paths shorter and cleaner.  
+
+---
+
+# **Paths for Referring to Items in the Module Tree**
+
+In Rust, **paths** are how we navigate the **module system** to access functions, structs, enums, and other items. Paths in Rust work similarly to **file paths in a computer's filesystem**, where we use directories and subdirectories to organize files.
+
+### **Two Types of Paths in Rust**
+1. **Absolute Paths** – Always start from the **crate root** and specify the **full path**.
+2. **Relative Paths** – Start from the **current module** and navigate using `self`, `super`, or direct names.
+
+Both types of paths use the `::` (**double colons**) separatoI've expanded on this section with detailed explanations, real-world analogies, and examples to make it easier to understand. Let me know if anything is still unclear! 🚀
+r, similar to how files are structured with `/` in UNIX-like systems or `\` in Windows.
+
+---
+
+## **Absolute Paths in Rust**
+An **absolute path** always starts from the **crate root** and specifies the full path to the item.
+
+📌 **Example (Absolute Path)**
+```rust
+crate::front_of_house::hosting::add_to_waitlist();
+```
+✔ The path starts with `crate`, which means it refers to an item **starting from the root** of the crate.
+✔ Then, it navigates through `front_of_house -> hosting -> add_to_waitlist`.
+
+💡 **Filesystem analogy**:  
+Imagine `crate::` is like `/` in Linux or `C:\` in Windows:
+```
+/front_of_house/hosting/add_to_waitlist
+C:\front_of_house\hosting\add_to_waitlist
+```
+---
+
+## **Relative Paths in Rust**
+A **relative path** starts from the **current module** instead of the crate root. This is useful when working with items **in the same scope**.
+
+📌 **Example (Relative Path)**
+```rust
+front_of_house::hosting::add_to_waitlist();
+```
+✔ This starts **from the current module** rather than the crate root.
+✔ It assumes `front_of_house` exists **within the same module** where this function is called.
+
+💡 **Filesystem analogy**:  
+Imagine you’re inside `/front_of_house/` and want to access `hosting/add_to_waitlist`:
+```
+hosting/add_to_waitlist  (relative)
+```
+---
+
+## **When to Use Absolute vs. Relative Paths?**
+| **Scenario**                                  | **Use Absolute Path**| **Use Relative Path** |
+|-------------                                  |----------------------|-----------------------|
+| Referencing items from anywhere in the crate  |           ✅         |           ❌          |
+| Moving code within the same module            |           ❌         |           ✅          |
+| Code organization is stable and won’t move    |           ✅         |           ❌          |
+| Code structure may change in the future       |           ❌         |           ✅          |
+
+🚀 **Best practice:**  
+Use **absolute paths** when code is spread across different modules.  
+Use **relative paths** when referencing nearby items that might move together.
+
+---
+
+## **Access Control**
+
+❌ **Problem:** By default, all **modules, functions, structs, and enums are private** within their parent module.  
+❌ **Rust’s rule:** **Child modules cannot be accessed from outside unless explicitly made public.**  
+
+---
+
+# **Exposing Paths with the `pub` Keyword**
+To **allow access to private modules and functions**, we use the `pub` (**public**) keyword.
+
+📌 **Fixing the Error: Making `hosting` Public**
+```rust
+mod front_of_house {
+    pub mod hosting { // ✅ Now public
+        pub fn add_to_waitlist() { // ✅ Now public
+            println!("Added to waitlist");
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Now works because hosting and add_to_waitlist are public!
+    crate::front_of_house::hosting::add_to_waitlist();
+}
+```
+✔ Now both `hosting` and `add_to_waitlist()` are `pub`, meaning they **can be accessed** from outside.
+
+---
+
+## **Important Rules About `pub`**
+- **Making a module public (`pub mod`) only makes the module visible**, but not its contents.
+- **Making an item public inside a public module (`pub fn`) allows external code to use it.**
+- **By default, Rust follows "Encapsulation":**  
+  - Modules **hide** their implementation details unless explicitly exposed.
+
+💡 **Think of a restaurant kitchen:**  
+- Customers can **see the menu** (public functions).
+- They **cannot see how the food is prepared** (private functions inside a module).
+
+---
+
+## **Best Practices for Modules in a Package**
+A **Rust package** often contains **both a library and a binary**. The **best practice** is to:
+1. **Define all logic inside a `lib.rs`** (library crate).
+2. **Use `main.rs`** (binary crate) **only to call library functions**.
+
+📌 **Example**
+```
+my_project/
+ ├── Cargo.toml
+ ├── src/
+ │   ├── main.rs  // Binary crate
+ │   ├── lib.rs   // Library crate (main logic)
+ │   ├── restaurant/
+ │   │   ├── front_of_house.rs
+ │   │   ├── back_of_house.rs
+```
+💡 This way, other projects can **reuse your library crate** without running the binary.
+
+---
+
+## **Using `super` to Refer to Parent Modules**
+If a function **needs to call another function in its parent module**, we can use **`super`** (like `..` in file paths).
+
+📌 **Example (Calling Parent Module Using `super`)**
+```rust
+fn deliver_order() {
+    println!("Order delivered!");
+}
+
+mod back_of_house {
+    pub fn fix_incorrect_order() {
+        cook_order();
+        super::deliver_order(); // ✅ Calls parent module function
+    }
+
+    fn cook_order() {
+        println!("Cooking order!");
+    }
+}
+```
+✔ `super::deliver_order();` moves **one level up** in the module tree to find `deliver_order()`.
+
+💡 **Filesystem analogy**:
+```
+../deliver_order  // Moves up one directory
+```
+
+---
+
+# **Making Structs and Enums Public**
+### **Structs (`pub struct`)**
+- **Making a struct public (`pub struct`) does NOT make its fields public.**
+- **You must use `pub` for each field individually.**
+
+📌 **Example**
+```rust
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,       // ✅ Public field
+        seasonal_fruit: String,  // ❌ Private field
+    }
+
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+
+    // ✅ Allowed: `toast` is public
+    meal.toast = String::from("Wheat");
+    println!("I'd like {} toast", meal.toast);
+
+    // ❌ Error: `seasonal_fruit` is private
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+```
+✔ `toast` is public, so it can be changed.  
+❌ `seasonal_fruit` is private, so **it cannot be accessed** outside the module.
+
+---
+
+### **Enums (`pub enum`)**
+- **Making an enum public (`pub enum`) automatically makes all its variants public**.
+
+📌 **Example**
+```rust
+mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let order1 = back_of_house::Appetizer::Soup;
+    let order2 = back_of_house::Appetizer::Salad;
+}
+```
+✔ Since `Appetizer` is `pub`, **all of its variants** are also **public**.  
+✔ **Unlike structs, enum variants do not need `pub` individually.**
+
+---
+
+## **Key Takeaways**
+✔ **Absolute paths** start from `crate::` and always refer to a fixed location.  
+✔ **Relative paths** start from the current module and allow flexible navigation.  
+✔ **Private by default:** Functions, structs, and modules must be explicitly marked `pub` to be accessible.  
+✔ **Struct fields require individual `pub` declarations**, but **enum variants are automatically public**.  
+✔ **Use `super` to reference a parent module**, similar to `..` in file paths.  
+
+### **Bringing Paths into Scope with `use`**  
+
+When working with Rust modules, writing long paths repeatedly can be **tedious and error-prone**. The `use` keyword allows us to create **shortcuts** to these paths, making our code **cleaner and more readable**.
+
+---
+
+## **1. Why Use `use`?**  
+Instead of writing **full module paths** every time, `use` lets us create a shortcut for easy access.
+
+### **Example Without `use` (Verbose Approach)**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {
+            println!("Added to waitlist!");
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Calling function using full path (verbose)
+    crate::front_of_house::hosting::add_to_waitlist();
+}
+```
+✔ This works, but it's **repetitive** and **hard to read**.  
+
+### **Example Using `use` (Cleaner Approach)**
+```rust
+use crate::front_of_house::hosting; // Create a shortcut
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist(); // Simpler!
+}
+```
+✔ Now, **`hosting::add_to_waitlist()`** is shorter and cleaner.  
+
+### **How `use` Works**
+- `use` **creates a shortcut** to a path.
+- The path **must still respect Rust’s privacy rules** (i.e., modules and functions must be `pub`).
+- `use` **only applies to the scope it’s defined in**.
+
+---
+
+## **2. Scope Rules of `use`**  
+
+`use` **only works within the scope where it is declared**. If another module needs the shortcut, it must declare `use` separately.
+
+### **Example: `use` Scope Limitation**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting; // `use` applied at crate level
+
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist(); // ❌ ERROR! `use` is not in this module
+    }
+}
+```
+💡 **Error: `hosting` is not defined in `customer`**  
+✔ To fix this, we **move `use` inside `customer`**:
+
+```rust
+mod customer {
+    use crate::front_of_house::hosting; // ✅ Declare `use` inside `customer`
+    
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist(); // ✅ Now it works!
+    }
+}
+```
+---
+
+## **3. Idiomatic `use` Paths**  
+
+When importing items, Rust follows certain **best practices**:
+
+### **👎 Bad (Unclear Code)**
+```rust
+use crate::front_of_house::hosting::add_to_waitlist;
+pub fn eat_at_restaurant() {
+    add_to_waitlist(); // ❌ Where does this function come from?
+}
+```
+💡 **Problem**: It’s not obvious that `add_to_waitlist` is from `hosting`.  
+
+### **👍 Good (Idiomatic Rust)**
+```rust
+use crate::front_of_house::hosting; // ✅ Import the module
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist(); // ✅ Clear where it comes from
+}
+```
+✔ This **reduces repetition** while keeping clarity.  
+
+### **Exception: Structs and Enums**
+For **structs, enums, and traits**, it's common to import them **directly**:
+
+```rust
+use std::collections::HashMap; // ✅ Idiomatic for structs and enums
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+}
+```
+✔ **Structs & enums** are usually used alone, so importing them directly is fine.
+
+---
+
+## **4. Handling Conflicts: Same Name Imports**
+Rust **does not allow** importing two items with the **same name**.  
+
+### **Example of Conflict**
+```rust
+use std::fmt::Result;
+use std::io::Result; // ❌ ERROR: Two `Result`s in the same scope!
+
+fn function1() -> Result {
+    // std::fmt::Result
+}
+
+fn function2() -> Result<()> {
+    // std::io::Result
+}
+```
+✔ **Fix 1: Keep Parent Modules**
+```rust
+use std::fmt;
+use std::io;
+
+fn function1() -> fmt::Result {}  // ✅ Clearly from `std::fmt`
+fn function2() -> io::Result<()> {}  // ✅ Clearly from `std::io`
+```
+
+✔ **Fix 2: Rename Using `as`**
+```rust
+use std::fmt::Result;
+use std::io::Result as IoResult; // ✅ Renamed to avoid conflict
+
+fn function1() -> Result {} // `std::fmt::Result`
+fn function2() -> IoResult<()> {} // `std::io::Result`
+```
+---
+
+## **5. Re-exporting with `pub use`**  
+
+Sometimes, we want to **make an imported module available for external use**.  
+This is useful when you **want to provide a cleaner API** for users of your library.
+
+### **Example Without `pub use`**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    crate::front_of_house::hosting::add_to_waitlist(); // ❌ External users must write full path!
+}
+```
+💡 **Problem**: External users **must know** the internal structure (`front_of_house::hosting`).
+
+---
+
+### **Example With `pub use` (Re-exporting)**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub use crate::front_of_house::hosting; // ✅ Expose `hosting` to external users
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist(); // ✅ Now accessible externally as `restaurant::hosting::add_to_waitlist`
+}
+```
+✔ Now, external users can just **write**:
+```rust
+restaurant::hosting::add_to_waitlist();
+```
+✔ This **hides unnecessary internal structure**.
+
+---
+
+## **6. Importing External Crates**
+If you use an **external crate**, you must:
+1. **Add it to `Cargo.toml`**
+2. **Use `use` to bring it into scope**
+
+### **Example: Importing `rand`**
+📌 **Cargo.toml**
+```toml
+[dependencies]
+rand = "0.8.5"
+```
+
+📌 **Rust Code**
+```rust
+use rand::Rng; // ✅ Import the `Rng` trait
+
+fn main() {
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+}
+```
+✔ **External crates must always be prefixed with their name (`rand::`)**.
+
+---
+
+## **7. Using Nested Paths (`{}`)**
+When importing **multiple items** from the same module, you can **group them**.
+
+### **👎 Bad (Too Many `use` Lines)**
+```rust
+use std::cmp::Ordering;
+use std::io;
+```
+✔ **Better Using Nested Paths**
+```rust
+use std::{cmp::Ordering, io}; // ✅ Cleaner and shorter
+```
+
+✔ **You Can Also Use `self` for Subpaths**
+```rust
+use std::io::{self, Write}; // ✅ Brings `std::io` and `std::io::Write`
+```
+✔ **Glob Import (`*`)**: Import **everything** from a module (⚠️ Use carefully!)
+```rust
+use std::collections::*; // ❌ Can lead to conflicts!
+```
+
+---
+
+## **Key Takeaways**
+✔ **`use` allows importing modules for easier access.**  
+✔ **`use` applies only in the scope it's declared.**  
+✔ **Idiomatic Rust imports parent modules (`use module_name`), not individual functions.**  
+✔ **Avoid conflicts by using parent modules or renaming imports with `as`.**  
+✔ **Use `pub use` to re-export modules and simplify external APIs.**  
+✔ **External crates require adding dependencies in `Cargo.toml` first.**  
+✔ **Use nested paths (`{}`) to reduce redundancy in multiple imports.**  
+
+### **Separating Modules into Different Files**  
+
+So far, we've been defining **all modules within a single file** (like `lib.rs` or `main.rs`). However, as projects grow, keeping everything in one file makes navigation **difficult** and **clutters the code**.  
+
+Rust allows you to **split modules into separate files** to keep the project organized and improve readability.
+
+---
+
+## **1. Moving a Module to a Separate File**  
+Let’s take the **existing module structure** and extract `front_of_house` into its own file.  
+
+### **Before (Everything in `lib.rs`):**  
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {
+            println!("Added to waitlist!");
+        }
+    }
+}
+
+pub use crate::front_of_house::hosting; // ✅ Re-exporting for easier access
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist(); // ✅ Function call
+}
+```
+✔ Everything works, but **all code is in one file**, making it harder to manage.
+
+---
+
+### **Step 1: Move `front_of_house` to `front_of_house.rs`**  
+Instead of defining `front_of_house` inside `lib.rs`, we move it into a **separate file**.
+
+📌 **Modify `src/lib.rs`:**  
+```rust
+mod front_of_house; // ✅ Declare module (Rust will look for `front_of_house.rs`)
+
+pub use crate::front_of_house::hosting; // ✅ Re-exporting
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+📌 **Create `src/front_of_house.rs`:**  
+```rust
+pub mod hosting {
+    pub fn add_to_waitlist() {
+        println!("Added to waitlist!");
+    }
+}
+```
+✔ **Now, `front_of_house` lives in its own file** (`src/front_of_house.rs`), but everything still works!
+
+---
+
+## **2. Moving a Submodule to Its Own File**  
+Now, let’s move `hosting` **out of `front_of_house.rs`** into its own file.  
+
+### **Step 2: Modify `src/front_of_house.rs` to Only Declare `hosting`**
+📌 **New `src/front_of_house.rs`:**  
+```rust
+pub mod hosting; // ✅ Declare submodule (Rust will look for `front_of_house/hosting.rs`)
+```
+📌 **Create `src/front_of_house/hosting.rs`:**  
+```rust
+pub fn add_to_waitlist() {
+    println!("Added to waitlist!");
+}
+```
+✔ **Now, both modules are in separate files**, improving organization.
+
+---
+
+## **3. How Rust Locates Modules in Files**  
+Rust **automatically** searches for module files based on the `mod` keyword:  
+
+| Module Declaration   | Rust Searches in These Locations |
+|----------------------|--------------------------------|
+| `mod front_of_house;` | `src/front_of_house.rs` |
+| `pub mod hosting;` (inside `front_of_house.rs`) | `src/front_of_house/hosting.rs` |
+
+💡 **Key Rule:** `mod` is **not** an "include" statement like in C or C++. It simply tells Rust **where to find the module**.
+
+---
+
+## **4. Alternative Module File Paths (`mod.rs` - Old Style)**  
+Older Rust projects used **`mod.rs` files**, but this style is now discouraged.
+
+| **Module**        | **New (Preferred) Style** | **Old Style (Still Supported)** |
+|------------------|-------------------------|------------------------------|
+| `front_of_house` | `src/front_of_house.rs` | `src/front_of_house/mod.rs` |
+| `hosting` (child module) | `src/front_of_house/hosting.rs` | `src/front_of_house/hosting/mod.rs` |
+
+💡 **Why Avoid `mod.rs`?**  
+- You **end up with too many `mod.rs` files**, making navigation difficult.
+- The new system makes the **directory structure more intuitive**.
+
+✔ **Stick to `mod_name.rs` and `mod_name/submodule.rs` instead!**
+
+---
+
+## **5. Re-Exporting Modules with `pub use`**  
+Sometimes, you want to **hide internal module structure** but still allow access to a module.
+
+### **Example Without `pub use` (Complicated)**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    front_of_house::hosting::add_to_waitlist(); // ❌ Must specify full path
+}
+```
+💡 **Problem:** External code must **navigate the full module structure**.
+
+### **Better: Using `pub use`**
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub use crate::front_of_house::hosting; // ✅ Re-export
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist(); // ✅ Cleaner!
+}
+```
+✔ **Now, external code can call `restaurant::hosting::add_to_waitlist()`** directly.  
+✔ **Hides unnecessary internal structure** (`front_of_house` is no longer needed externally).
+
+---
+
+## **6. Summary: Organizing Large Projects with Modules**
+✔ **Modules allow you to structure large Rust projects efficiently.**  
+✔ **Use separate files for large modules** instead of keeping everything in `lib.rs` or `main.rs`.  
+✔ **Declare modules using `mod module_name;`**, and Rust will look for the corresponding file.  
+✔ **Use subdirectories for nested modules** (`src/module_name/submodule.rs`).  
+✔ **Avoid the old `mod.rs` style**—use `mod_name.rs` instead.  
+✔ **Use `pub use` to simplify external module access** and hide internal structure.  
