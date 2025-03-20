@@ -206,7 +206,7 @@ Rust has four primary scalar types that represent a single value:
 |---------|---------|----------|
 | 8-bit   | `i8`    | `u8`     |
 | 16-bit  | `i16`   | `u16`    |
-| 32-bit  | `i32`   | `u32`    |
+| 32-bit  | `i32`   | `u32`    | --> `i32` i a default integer type
 | 64-bit  | `i64`   | `u64`    |
 | 128-bit | `i128`  | `u128`   |
 | Arch    | `isize` | `usize`  |
@@ -3876,3 +3876,711 @@ pub fn eat_at_restaurant() {
 ✔ **Use subdirectories for nested modules** (`src/module_name/submodule.rs`).  
 ✔ **Avoid the old `mod.rs` style**—use `mod_name.rs` instead.  
 ✔ **Use `pub use` to simplify external module access** and hide internal structure.  
+
+---
+
+```markdown
+# Chapter 8 - Common Collections in Rust
+
+Rust’s standard library includes several **collections**—data structures that store multiple values. Unlike arrays and tuples, collections **store data on the heap**, allowing them to grow or shrink dynamically.
+
+This chapter focuses on **three essential collections** that you will use frequently in Rust:
+
+- **Vectors (`Vec<T>`)** – Store a list of values of the same type.
+- **Strings (`String`)** – A dynamically growing collection of characters.
+- **Hash Maps (`HashMap<K, V>`)** – A key-value store.
+
+## **1. Why Use Collections?**
+Most basic data types store **only one value**. Collections, however, allow us to:
+✔ Store multiple values in a single structure.  
+✔ Grow or shrink dynamically at runtime.  
+✔ Use powerful methods to modify and retrieve data efficiently.  
+
+Rust ensures **memory safety** in collections using **ownership and borrowing rules**.
+
+---
+
+# **2. Storing Lists of Values with Vectors (`Vec<T>`)**
+The **vector type (`Vec<T>`)** allows us to store multiple values of **the same type** in contiguous memory. This is useful when dealing with lists, such as:
+- A list of **grades** in a report card.
+- A list of **players** in a game.
+- A **sequence of numbers** in a mathematical operation.
+
+## **Creating a New Vector**
+There are two main ways to create a vector:
+
+### **Method 1: Using `Vec::new()`**
+```rust
+let v: Vec<i32> = Vec::new();
+```
+✔ Creates an **empty vector**.  
+✔ We **must specify the type** (`i32` in this case) because Rust **cannot infer it** from an empty vector.  
+
+### **Method 2: Using `vec!` Macro (Recommended)**
+```rust
+let v = vec![1, 2, 3];
+```
+✔ This creates a vector with **initial values**.  
+✔ Rust **infers the type** (`Vec<i32>`) from the values.  
+✔ More convenient than `Vec::new()`.
+
+---
+
+## **3. Modifying a Vector**
+To add values to a vector **after creation**, we use the `.push()` method.
+
+### **Example: Adding Elements**
+```rust
+let mut v = Vec::new(); // Mutable vector
+v.push(5);
+v.push(6);
+v.push(7);
+```
+✔ **Vectors must be mutable** (`mut`) to allow modification.  
+✔ The type is inferred as `Vec<i32>` because we added `i32` values.
+
+---
+
+## **4. Accessing Elements in a Vector**
+There are **two ways** to read values from a vector:  
+✔ **Indexing (`v[index]`)** – Panics if the index is out of bounds.  
+✔ **`.get(index)` method** – Returns an `Option<&T>` to avoid panicking.
+
+### **Example: Accessing Elements**
+```rust
+let v = vec![10, 20, 30, 40, 50];
+
+let third: &i32 = &v[2]; // Using indexing
+println!("The third element is {third}");
+
+let third = v.get(2); // Using .get()
+match third {
+    Some(value) => println!("The third element is {value}"),
+    None => println!("There is no third element."),
+}
+```
+✔ **Indexing (`v[2]`)** returns a direct reference but **panics if out of range**.  
+✔ **`.get(2)`** returns an `Option<&i32>` that we **must handle safely**. --prefered way
+
+---
+
+## **5. Handling Out-of-Bounds Access**
+If we try to **access an invalid index**, Rust reacts differently based on the method used:
+
+### **Example: Invalid Index Access**
+```rust
+let v = vec![1, 2, 3, 4, 5];
+
+// ❌ This will cause a runtime panic!
+let does_not_exist = &v[100];
+
+// ✅ This will return `None`, preventing a crash
+let does_not_exist = v.get(100);
+```
+- **Using `v[100]` panics the program** if the index is out of range.
+- **Using `v.get(100)` returns `None`**, allowing us to handle the error gracefully.
+
+---
+
+## **6. Borrowing and Mutability Issues in Vectors**
+Rust **does not allow** modifying a vector while holding an immutable reference.
+
+### **Example: Mutable Borrowing Conflict**
+```rust
+let mut v = vec![1, 2, 3, 4, 5];
+let first = &v[0]; // Immutable reference
+
+v.push(6); // ❌ ERROR: Mutable borrow while an immutable reference exists
+
+println!("First element is: {first}"); // This cannot happen
+```
+🚨 **Why does this fail?**  
+- Rust **prevents modifying a vector (`v.push(6)`) while an immutable reference (`first`) exists**.
+- **Solution**: Access elements **after** modifying the vector.
+
+### **Example: Correct Order of Operations**
+```rust
+let mut v = vec![1, 2, 3, 4, 5];
+
+v.push(6); // Modify the vector first
+
+let first = &v[0]; // Immutable reference after modification
+
+println!("First element is: {first}"); // This works now
+```
+
+## **7. Iterating Over a Vector**
+Instead of accessing elements one by one, we can iterate over them.
+
+### **Example: Immutable Iteration**
+```rust
+let v = vec![100, 32, 57];
+
+for num in &v {
+    println!("{num}");
+}
+```
+✔ The **`&v`** gives an immutable reference to each item.
+
+### **Example: Mutable Iteration**
+```rust
+let mut v = vec![100, 32, 57];
+
+for num in &mut v {
+    *num += 50; // Modify elements in-place
+}
+```
+✔ The **`&mut v`** allows modifying each item.  
+✔ We need to use **`*num` (dereferencing)** to change the actual value.
+
+---
+
+## **8. Storing Multiple Types in a Vector**
+Vectors **only store values of the same type**.  
+To store different types, we use **enums**.
+
+### **Example: Using an Enum**
+```rust
+enum SpreadsheetCell {
+    Int(i32),
+    Float(f64),
+    Text(String),
+}
+
+let row = vec![
+    SpreadsheetCell::Int(3),
+    SpreadsheetCell::Text(String::from("blue")),
+    SpreadsheetCell::Float(10.12),
+];
+```
+✔ **All elements belong to the same type (`SpreadsheetCell`)**.  
+✔ Rust ensures type safety **at compile time**.  
+✔ If the possible types are unknown at compile time, **use trait objects (covered in Chapter 17).**
+
+---
+
+## **9. Dropping a Vector (Memory Management)**
+When a vector **goes out of scope**, Rust **automatically cleans up its memory**.
+
+### **Example: Vector Drops Its Elements**
+```rust
+{
+    let v = vec![1, 2, 3, 4];
+    // Do something with v
+} // <- v goes out of scope and is freed
+```
+✔ **All elements inside `v` are also dropped automatically.**  
+✔ Rust's **ownership system** prevents memory leaks.
+
+---
+
+## **10. Summary of `Vec<T>`**
+✔ **Vectors store multiple values in contiguous memory.**  
+✔ **Use `.push()` to add elements** to a mutable vector.  
+✔ **Use `v[index]` for direct access (panics if out of bounds).**  
+✔ **Use `v.get(index)` for safe access (returns `Option<&T>`).**  
+✔ **Cannot modify a vector while holding an immutable reference.**  
+✔ **Use `for` loops to iterate over elements.**  
+✔ **To store multiple types, use an `enum`.**  
+✔ **Vectors are automatically freed when they go out of scope.**  
+
+---
+
+```markdown
+# Storing UTF-8 Encoded Text with Strings
+
+## **1. Understanding Strings in Rust**
+Rust strings can be confusing at first because:
+- **Rust prevents common string-related errors.**
+- **Strings are more complex than they appear** in many programming languages.
+- **Rust enforces UTF-8 encoding**, which makes handling different languages trickier.
+
+Unlike other languages where strings are simple character arrays, Rust **stores strings as collections of bytes** and provides methods to interpret them as human-readable text.
+
+### **Two Main String Types in Rust**
+Rust provides **two primary string types**:
+| **Type**   | **Description** |
+|------------|----------------|
+| `String`   | A **growable, mutable, heap-allocated** string. |
+| `&str`     | A **string slice**—an immutable reference to part of a `String` or a string literal. |
+
+✔ `String` is used when we **own and modify** text.  
+✔ `&str` is used when we **borrow** a string (e.g., function arguments).  
+
+---
+
+## **2. Creating Strings**
+A `String` is essentially **a wrapper around a vector of bytes (`Vec<u8>`)**.
+
+### **Method 1: Creating an Empty String**
+```rust
+let mut s = String::new(); // Creates an empty, growable String
+```
+✔ This is useful when we **want to build a string dynamically**.
+
+### **Method 2: Creating a String from a String Literal**
+```rust
+let s = String::from("Hello, world!");
+```
+✔ Equivalent to:
+```rust
+let s = "Hello, world!".to_string();
+```
+✔ `String::from()` and `.to_string()` **both create a `String` from a `&str`**.  
+✔ Both methods **store the string in heap memory**.
+
+### **UTF-8 Encoding in Strings**
+Rust strings **support all Unicode characters**, so you can store text in different languages:
+```rust
+let hello = String::from("こんにちは");  // Japanese
+let hello = String::from("Здравствуйте"); // Russian
+let hello = String::from("안녕하세요");  // Korean
+```
+✔ Every `String` in Rust is **UTF-8 encoded by default**.
+
+---
+
+## **3. Updating a String**
+Rust allows modifying a `String`, just like a `Vec<T>`, using **`push_str()`**, **`push()`**, or **concatenation**.
+
+### **Method 1: Using `push_str()` to Append Text**
+```rust
+let mut s = String::from("Hello");
+s.push_str(", world!");
+println!("{}", s); // Output: "Hello, world!"
+```
+✔ `push_str()` **appends a string slice (`&str`)** without taking ownership.
+
+### **Method 2: Using `push()` to Append a Single Character**
+```rust
+let mut s = String::from("Hi");
+s.push('!');
+println!("{}", s); // Output: "Hi!"
+```
+✔ `push()` **only adds a single character (`char`)**.
+
+### **Method 3: Concatenation Using the `+` Operator**
+```rust
+let s1 = String::from("Hello, ");
+let s2 = String::from("world!");
+let s3 = s1 + &s2; // `s1` is moved and cannot be used afterward
+println!("{}", s3); // Output: "Hello, world!"
+```
+✔ **`s1` is moved**, meaning it cannot be used after the `+` operation.  
+✔ **`s2` is borrowed (`&s2`)**, so it is still accessible.
+
+### **Method 4: Concatenating Multiple Strings with `format!` (Recommended)**
+Using `+` can be **unreadable** when concatenating multiple strings:
+```rust
+let s1 = String::from("tic");
+let s2 = String::from("tac");
+let s3 = String::from("toe");
+
+let result = s1 + "-" + &s2 + "-" + &s3;
+```
+A **better approach** is to use the `format!` macro:
+```rust
+let s = format!("{s1}-{s2}-{s3}");
+println!("{}", s); // Output: "tic-tac-toe"
+```
+✔ `format!` **does not take ownership** of any string.  
+✔ It is **more readable and efficient**.
+
+---
+
+## **4. Why Rust Strings Cannot Be Indexed**
+In many programming languages, you can access characters in a string using an index (`s[0]`).  
+❌ **Rust does not allow indexing into a `String` like this:**
+```rust
+let s = String::from("hello");
+let h = s[0]; // ❌ ERROR: Strings cannot be indexed
+```
+💡 **Why?**
+1. **Rust stores strings as a sequence of bytes (`Vec<u8>`)**, not individual characters.
+2. **Different characters take different amounts of bytes in UTF-8.**
+   - Example: The Russian word `"Здравствуйте"` takes **24 bytes**, not 12 characters!
+   - Indexing into `"Здравствуйте"[0]` would return **only part of a character**, which is invalid.
+
+---
+
+## **5. Slicing Strings Safely**
+Instead of indexing, Rust allows **string slicing**:
+```rust
+let hello = String::from("Здравствуйте");
+let s = &hello[0..4]; // ✅ Valid slice
+println!("{}", s); // Output: "Зд"
+```
+🚨 **Warning:**  
+Slicing must **only cut at valid UTF-8 boundaries**. Otherwise, Rust **panics** at runtime.
+
+---
+
+## **6. Iterating Over Strings**
+Since strings cannot be indexed, **iterating over characters or bytes** is the best way to process them.
+
+### **Method 1: Iterating Over Unicode Characters**
+```rust
+for c in "Зд".chars() {
+    println!("{}", c);
+}
+```
+✔ Prints:
+```
+З
+д
+```
+✔ `.chars()` **returns Unicode characters (`char`)**.
+
+### **Method 2: Iterating Over Raw Bytes**
+```rust
+for b in "Зд".bytes() {
+    println!("{}", b);
+}
+```
+✔ Prints the **raw UTF-8 bytes**:
+```
+208
+151
+208
+180
+```
+✔ `.bytes()` **returns each raw byte (`u8`)**.
+
+---
+
+## **7. Understanding UTF-8 Complexity**
+Rust strings **store data as bytes**, but characters may be more complex:
+| Representation | Meaning |
+|---------------|---------|
+| **Bytes (`u8`)** | Raw data stored in memory. |
+| **Unicode Scalars (`char`)** | Single characters (may use multiple bytes). |
+| **Grapheme Clusters** | A **user-perceived** character (e.g., "न" + "्" = "न्"). |
+
+💡 **Example: Hindi Word "नमस्ते"**
+- **Bytes:** `[224, 164, 168, 224, 164, 174, 224, 164, 184, 224, 165, 141, 224, 164, 164, 224, 165, 135]`
+- **Characters (`char`):** `['न', 'म', 'स', '्', 'त', 'े']`
+- **Grapheme Clusters:** `["न", "म", "स्", "ते"]`
+
+✔ **Rust does not provide built-in grapheme cluster handling**—use external crates if needed.
+
+---
+
+## **8. Summary of Strings in Rust**
+✔ **Strings are UTF-8 encoded collections of bytes.**  
+✔ **Two types exist:** `String` (owned) and `&str` (borrowed).  
+✔ **Use `push_str()` or `push()` to modify strings.**  
+✔ **Use `+` or `format!` to concatenate strings.**  
+✔ **Strings cannot be indexed due to UTF-8 complexity.**  
+✔ **Use `.chars()` for characters and `.bytes()` for raw bytes.**  
+✔ **Be careful when slicing strings—only use valid byte ranges.**  
+
+---
+
+```markdown
+# Storing Keys with Associated Values in Hash Maps
+
+## **1. What is a Hash Map?**
+A **HashMap<K, V>** is a collection that **maps keys (`K`) to values (`V`)**. It is also known as:
+- **Dictionary** (Python)
+- **Hash table** (General CS term)
+- **Object** (JavaScript)
+- **Associative array** (PHP)
+
+### **Why Use a Hash Map?**
+Unlike vectors (`Vec<T>`) that use **index-based lookup**, hash maps allow you to:
+✔ **Look up values using keys** instead of numerical indices.  
+✔ **Quickly retrieve values** without scanning the entire collection.  
+✔ **Store key-value pairs** efficiently.
+
+💡 **Example Use Case**:  
+In a game, you could use a hash map to **track team scores**:
+```rust
+let mut scores = HashMap::new();
+scores.insert("Blue", 10);
+scores.insert("Yellow", 50);
+```
+Now, `scores["Blue"]` gives us `10`.
+
+---
+
+## **2. Creating a Hash Map**
+Since hash maps are **less commonly used** than vectors and strings, Rust **does not include them in the prelude**.  
+You must explicitly **import them** from `std::collections`:
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+```
+✔ We **declare a mutable hash map (`mut scores`)**.  
+✔ We **insert key-value pairs (`insert()`)**, associating `"Blue"` with `10` and `"Yellow"` with `50`.  
+
+💡 **Important Notes**:
+- All **keys must have the same type** (e.g., `String`).
+- All **values must have the same type** (e.g., `i32`).
+- Hash maps **store data on the heap**, just like vectors.
+
+---
+
+## **3. Accessing Values in a Hash Map**
+To retrieve a value, use the `.get()` method:
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+let team_name = String::from("Blue");
+let score = scores.get(&team_name).copied().unwrap_or(0);
+
+println!("Score: {}", score);
+```
+✔ **`.get(&key)` returns `Option<&V>`** because the key may not exist.  
+✔ **`.copied()` converts `Option<&i32>` to `Option<i32>`**.  
+✔ **`.unwrap_or(0)` returns `0` if the key doesn't exist**.
+
+---
+
+## **4. Iterating Over Key-Value Pairs**
+To loop through all key-value pairs in a hash map:
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+for (key, value) in &scores {
+    println!("{key}: {value}");
+}
+```
+✔ **Iterates over all key-value pairs** in an **arbitrary order** (hash maps don’t maintain insertion order).  
+✔ Prints:
+```
+Yellow: 50
+Blue: 10
+```
+
+---
+
+## **5. Hash Maps and Ownership**
+### **How Rust Handles Ownership in Hash Maps**
+When inserting **values** into a hash map:
+- If the type implements **Copy** (e.g., `i32`), Rust **copies** the value.
+- If the type is **owned** (e.g., `String`), Rust **moves** the value into the hash map.
+
+### **Example: Moving Ownership**
+```rust
+use std::collections::HashMap;
+
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(field_name, field_value);
+
+// ❌ field_name and field_value are now invalid!
+// println!("{}", field_name); // ERROR: Ownership moved!
+```
+✔ **Ownership of `field_name` and `field_value` transfers to the hash map**.  
+✔ We **cannot use `field_name` afterward** because it was moved.
+
+### **Storing References Instead of Moving Data**
+To **avoid ownership transfer**, store **references** instead of owned values:
+```rust
+use std::collections::HashMap;
+
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(&field_name, &field_value); // Store references
+
+println!("{}", field_name); // ✅ Still valid
+```
+🚨 **Warning**: The **referenced data must outlive the hash map**!
+
+---
+
+## **6. Updating a Hash Map**
+Each key can only store **one value** at a time, but Rust offers **three ways to update values**.
+
+### **Method 1: Overwriting an Existing Value**
+If we insert a **new value for an existing key**, Rust **overwrites the old value**:
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Blue"), 25);
+
+println!("{:?}", scores); // Output: {"Blue": 25}
+```
+✔ `"Blue"` initially had `10`, but it was **replaced** with `25`.
+
+---
+
+### **Method 2: Only Inserting a Value If the Key Doesn’t Exist (`entry().or_insert()`)**
+To **add a key-value pair only if the key is missing**, use `.entry().or_insert()`:
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+
+scores.entry(String::from("Yellow")).or_insert(50);
+scores.entry(String::from("Blue")).or_insert(50);
+
+println!("{:?}", scores); // Output: {"Blue": 10, "Yellow": 50}
+```
+✔ `"Blue"` **was not updated** because it already had a value.  
+✔ `"Yellow"` **was inserted** because it was missing.
+
+---
+
+### **Method 3: Updating a Value Based on the Old Value**
+To **modify a value based on its previous value**, use `.entry().or_insert()` and **mutate it**:
+
+```rust
+use std::collections::HashMap;
+
+let text = "hello world wonderful world";
+let mut map = HashMap::new();
+
+for word in text.split_whitespace() {
+    let count = map.entry(word).or_insert(0);
+    *count += 1;
+}
+
+println!("{:?}", map); // Output: {"world": 2, "hello": 1, "wonderful": 1}
+```
+✔ `.entry(word).or_insert(0)` initializes the count to `0` if the word is missing.  
+✔ `*count += 1` **increments the existing count**.  
+
+💡 **This is useful for counting word occurrences in text**.
+
+---
+
+## **7. How Hash Maps Work Internally**
+Rust’s `HashMap<K, V>` **uses a hashing function** to store and retrieve values efficiently.
+
+### **Default Hashing Algorithm: `SipHash`**
+- **SipHash** is used for security **against DoS attacks**.
+- **Other languages use faster but less secure hashing algorithms**.
+
+### **Using a Custom Hashing Algorithm**
+If you need **better performance**, you can use a different hashing function:
+
+```rust
+use std::collections::HashMap;
+use std::hash::BuildHasherDefault;
+use std::collections::hash_map::DefaultHasher;
+
+let mut scores: HashMap<String, i32, BuildHasherDefault<DefaultHasher>> = HashMap::default();
+```
+🚀 **This is an advanced optimization**—not needed for most applications.
+
+---
+
+## **8. Summary of Hash Maps in Rust**
+✔ **Hash maps store key-value pairs and allow fast lookups**.  
+✔ **Keys and values must be of the same type**.  
+✔ **Rust takes ownership of inserted `String` keys/values unless referenced**.  
+✔ **Use `.entry().or_insert()` to insert only if missing**.  
+✔ **Use `.entry().or_insert_mut()` to update values based on existing ones**.  
+✔ **Hash maps use `SipHash` for security but can be customized**.  
+
+---
+
+Here's a **clear and concise summary** of **Chapter 8 - Common Collections** with key takeaways and the suggested exercises.
+
+---
+
+```markdown
+# **Chapter 8 Summary - Common Collections in Rust**
+
+Rust’s standard library provides **three essential collections**:
+1. **Vectors (`Vec<T>`)** – Store a list of values in **contiguous memory**.
+2. **Strings (`String`)** – A **growable, heap-allocated** UTF-8 text storage.
+3. **Hash Maps (`HashMap<K, V>`)** – Store key-value pairs with **fast lookups**.
+
+## **1. Vectors (`Vec<T>`)**
+- **Used for**: Storing multiple values of the **same type**.
+- **Key Methods**:
+  - `Vec::new()` → Create an empty vector.
+  - `vec![...]` → Initialize a vector with values.
+  - `.push(value)` → Add an element.
+  - `.get(index)` → Safely retrieve an element (`Option<T>`).
+  - `.iter()` → Loop through elements.
+- **Important Concepts**:
+  - Cannot modify a vector while holding an **immutable reference**.
+  - Use **enums** to store multiple types in a vector.
+
+---
+
+## **2. Strings (`String` and `&str`)**
+- **Used for**: Storing and manipulating UTF-8 encoded text.
+- **Key Methods**:
+  - `String::new()` → Create an empty string.
+  - `"text".to_string()` or `String::from("text")` → Convert a string literal to `String`.
+  - `.push_str("text")` → Append a string slice.
+  - `.push('c')` → Append a single character.
+  - **Concatenation**:
+    - `"str1".to_string() + "str2"` (Consumes `str1`).
+    - `format!("{s1}-{s2}")` (Preferred, more readable).
+  - `.chars()` → Iterate over characters.
+  - `.bytes()` → Iterate over raw UTF-8 bytes.
+- **Important Concepts**:
+  - **Strings cannot be indexed (`s[0]` is invalid)** because Rust stores them as bytes.
+  - **Slicing must be valid UTF-8 boundaries** to avoid runtime panics.
+
+---
+
+## **3. Hash Maps (`HashMap<K, V>`)**
+- **Used for**: Storing key-value pairs for **fast lookups**.
+- **Key Methods**:
+  - `HashMap::new()` → Create an empty hash map.
+  - `.insert(key, value)` → Add a key-value pair.
+  - `.get(&key)` → Retrieve a value (`Option<V>`).
+  - `.entry(key).or_insert(value)` → Insert only if the key is missing.
+  - **Iterating**: `for (key, value) in &hash_map { ... }`
+- **Important Concepts**:
+  - Hash maps **take ownership** of `String` keys and values unless referenced.
+  - Uses **`SipHash` (secure but slower hashing function)** by default.
+  - Supports **updating values** based on previous values (useful for word counting).
+
+---
+
+## **4. Chapter 8 Exercises**
+Here are some problems to test your knowledge of **vectors, strings, and hash maps**:
+
+### **Exercise 1: Find the Median & Mode of a List**
+✔ Given a list of integers:
+   - Find the **median** (middle value after sorting).
+   - Find the **mode** (most frequently occurring number using a hash map).
+
+### **Exercise 2: Convert Text to Pig Latin**
+✔ Convert a sentence into **Pig Latin**:
+   - Move the **first consonant** to the end and add `"ay"` (`"first" → "irst-fay"`).
+   - If the word **starts with a vowel**, add `"hay"` at the end (`"apple" → "apple-hay"`).
+   - Be careful with **UTF-8 encoding**!
+
+### **Exercise 3: Employee Management System**
+✔ Create a **text interface** that:
+   - Allows a user to add employees to **departments** (`"Add Sally to Engineering"`).
+   - Retrieves a **sorted list** of employees in a department.
+   - Retrieves a **sorted list of all employees** grouped by department.
+
+---
+
+## **Final Thoughts**
+- **Vectors, Strings, and Hash Maps** are crucial for handling **dynamic data** in Rust.
+- The **standard library documentation** has many **useful methods** beyond what we covered.
+- Next, we’ll explore **Error Handling** in Rust, which is important for handling failures in more complex programs.
