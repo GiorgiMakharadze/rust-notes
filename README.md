@@ -4995,7 +4995,7 @@ Generics are a powerful feature in Rust that enable you to write flexible and re
 
 Generics let you write code that works with many different types, instead of repeating the same logic for each type.
 
-Think of generics as placeholders for types. Instead of saying, “this function only works with `i32`, you say, “this function works with any type — you choose which!”
+Think of generics as placeholders for types. Instead of saying, “this function only works with `i32`", you say, “this function works with any type — you choose which!”
 
 In many programming languages, similar tools exist to avoid duplication and boilerplate, but Rust's generics are known for their **zero-cost abstraction**—meaning there's no runtime performance penalty. Rust achieves this by compiling generic code into optimized versions specific to each concrete type used.
 
@@ -5464,7 +5464,7 @@ Imagine this: you create a reference to a variable, but that variable goes out o
 
 ## 🔍 What is a Lifetime?
 
-A **lifetime** is the span during which a reference is valid. For example:
+A **lifetime** (') is the span during which a reference is valid. For example:
 
 ```rust
 fn main() {
@@ -5493,7 +5493,7 @@ fn main() {
 
 ---
 
-## 🔠 Lifetime Syntax
+## Lifetime Syntax
 
 Just like types can be generic (`T`, `U`, etc.), lifetimes can be too. Rust uses names like `'a`, `'b` to label them.
 
@@ -5505,7 +5505,7 @@ Examples:
 
 ---
 
-## 📦 Lifetimes in Function Signatures
+## Lifetimes in Function Signatures
 
 Let’s write a function to return the longer of two string slices:
 
@@ -5542,7 +5542,7 @@ Rust will ensure the returned reference does not outlive either input.
 
 ---
 
-## 🧪 Real Example
+## Real Example
 
 ```rust
 fn main() {
@@ -5579,13 +5579,7 @@ Rust will complain because `string2` is dropped while `result` might reference i
 - Rust infers most lifetimes, but **you must specify them** when ambiguity arises.
 - Lifetime annotations look like `'a`, `'b`, etc.
 - They go in function signatures and describe how the lifetimes of inputs relate to outputs.
-- You are not changing how long data lives—you’re telling Rust how long references *must* be valid.
-
----
-
-## Practice Idea
-
-Try writing your own function like `longest`, but use `&'a i32` instead of strings. Experiment with scopes and lifetimes. Make a guess whether something will compile *before* you try it, and let the compiler teach you!
+-**You are not changing how long data lives—you’re telling Rust how long references *must* be valid**.
 
 ---
 
@@ -5741,4 +5735,584 @@ where
 - Rust’s **borrow checker** ensures safety at compile time.
 - Rust can **elide** (omit) some lifetimes using predictable rules.
 - You can mix **lifetimes, generics, and traits** to write powerful, reusable, and safe code.
+
+# Chapter 11 - Writing Automated Tests in Rust
+
+## Why Write Tests?
+
+Even though Rust has a powerful type system and a compiler that prevents many common programming errors, **bugs can still occur**. Tests are essential to ensure that your code works as expected and continues to work as you make changes.
+
+The goal of a test is to verify that your code:
+1. Produces the correct output for a given input.
+2. Handles edge cases and errors properly.
+3. Continues to behave correctly as your codebase evolves.
+
+Rust provides built-in tools to write, organize, and run tests efficiently.
+
+---
+
+## Anatomy of a Test Function
+
+A basic test in Rust is a regular function marked with the `#[test]` attribute:
+```rust
+#[test]
+fn it_works() {
+    let result = 2 + 2;
+    assert_eq!(result, 4);
+}
+```
+When you run `cargo test`, Rust compiles your code and runs all functions marked with `#[test]`. Each test is executed in a separate thread.
+
+### Assertions in Tests
+- `assert!(condition)` → Fails if the condition is `false`
+- `assert_eq!(left, right)` → Fails if the values are not equal
+- `assert_ne!(left, right)` → Fails if the values are equal
+
+---
+
+## Writing Your First Tests
+
+Create a new library project:
+```sh
+cargo new adder --lib
+cd adder
+```
+Rust automatically creates a `tests` module in `src/lib.rs`:
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+```
+Run the test:
+```sh
+cargo test
+```
+
+You should see output showing the test passed. If you write another test and cause it to panic, it will fail:
+```rust
+#[test]
+fn fails() {
+    panic!("This test fails!");
+}
+```
+
+---
+
+## Using `assert!`, `assert_eq!`, and `assert_ne!`
+
+### Example:
+```rust
+fn add_two(x: i32) -> i32 {
+    x + 2
+}
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(add_two(2), 4);
+}
+```
+If the function returns 5 instead of 4, the test will fail and show a detailed message:
+```sh
+assertion failed: `(left == right)`
+  left: `4`,
+ right: `5`
+```
+
+---
+
+## Custom Failure Messages
+
+```rust
+#[test]
+fn greeting_contains_name() {
+    let result = greeting("Carol");
+    assert!(
+        result.contains("Carol"),
+        "Greeting did not contain name, value was `{}`", result
+    );
+}
+```
+This helps make failure messages clearer when debugging.
+
+---
+
+## Testing for Panics with `#[should_panic]`
+
+Use this attribute when you expect code to `panic!` under certain conditions:
+```rust
+#[test]
+#[should_panic(expected = "less than or equal to 100")]
+fn greater_than_100() {
+    Guess::new(200);
+}
+```
+This test passes only if a panic occurs and the panic message contains the expected text.
+
+### Example Struct:
+```rust
+pub struct Guess {
+    value: i32,
+}
+
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value must be between 1 and 100, got {}.", value);
+        }
+        Guess { value }
+    }
+}
+```
+
+---
+
+## Using `Result<T, E>` in Tests
+
+Tests can also return `Result<(), E>` for more flexibility:
+```rust
+#[test]
+fn it_works() -> Result<(), String> {
+    if 2 + 2 == 4 {
+        Ok(())
+    } else {
+        Err(String::from("2 + 2 != 4"))
+    }
+}
+```
+You can now use `?` in your test functions, and handle errors without panics.
+
+---
+
+## Summary
+
+Rust's testing framework is simple, expressive, and integrated with the language and build system. You can:
+- Use assertions to validate logic.
+- Handle panic scenarios.
+- Return `Result` types.
+- See clear output for failures.
+
+# Chapter 12 - Writing Automated Tests in Rust
+
+## Why Write Tests?
+
+Even though Rust has a powerful type system and a compiler that prevents many common programming errors, **bugs can still occur**. Tests are essential to ensure that your code works as expected and continues to work as you make changes.
+
+The goal of a test is to verify that your code:
+1. Produces the correct output for a given input.
+2. Handles edge cases and errors properly.
+3. Continues to behave correctly as your codebase evolves.
+
+Rust provides built-in tools to write, organize, and run tests efficiently.
+
+---
+
+## Anatomy of a Test Function
+
+A basic test in Rust is a regular function marked with the `#[test]` attribute:
+```rust
+#[test]
+fn it_works() {
+    let result = 2 + 2;
+    assert_eq!(result, 4);
+}
+```
+When you run `cargo test`, Rust compiles your code and runs all functions marked with `#[test]`. Each test is executed in a separate thread.
+
+### Assertions in Tests
+- `assert!(condition)` → Fails if the condition is `false`
+- `assert_eq!(left, right)` → Fails if the values are not equal
+- `assert_ne!(left, right)` → Fails if the values are equal
+
+---
+
+## Writing Your First Tests
+
+Create a new library project:
+```sh
+cargo new adder --lib
+cd adder
+```
+Rust automatically creates a `tests` module in `src/lib.rs`:
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+```
+Run the test:
+```sh
+cargo test
+```
+
+You should see output showing the test passed. If you write another test and cause it to panic, it will fail:
+```rust
+#[test]
+fn fails() {
+    panic!("This test fails!");
+}
+```
+
+---
+
+## Using `assert!`, `assert_eq!`, and `assert_ne!`
+
+### Example:
+```rust
+fn add_two(x: i32) -> i32 {
+    x + 2
+}
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(add_two(2), 4);
+}
+```
+If the function returns 5 instead of 4, the test will fail and show a detailed message:
+```sh
+assertion failed: `(left == right)`
+  left: `4`,
+ right: `5`
+```
+
+---
+
+## Custom Failure Messages
+
+```rust
+#[test]
+fn greeting_contains_name() {
+    let result = greeting("Carol");
+    assert!(
+        result.contains("Carol"),
+        "Greeting did not contain name, value was `{}`", result
+    );
+}
+```
+This helps make failure messages clearer when debugging.
+
+---
+
+## Testing for Panics with `#[should_panic]`
+
+Use this attribute when you expect code to `panic!` under certain conditions:
+```rust
+#[test]
+#[should_panic(expected = "less than or equal to 100")]
+fn greater_than_100() {
+    Guess::new(200);
+}
+```
+This test passes only if a panic occurs and the panic message contains the expected text.
+
+### Example Struct:
+```rust
+pub struct Guess {
+    value: i32,
+}
+
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value must be between 1 and 100, got {}.", value);
+        }
+        Guess { value }
+    }
+}
+```
+
+---
+
+## Using `Result<T, E>` in Tests
+
+Tests can also return `Result<(), E>` for more flexibility:
+```rust
+#[test]
+fn it_works() -> Result<(), String> {
+    if 2 + 2 == 4 {
+        Ok(())
+    } else {
+        Err(String::from("2 + 2 != 4"))
+    }
+}
+```
+You can now use `?` in your test functions, and handle errors without panics.
+
+---
+
+## Summary
+
+Rust's testing framework is simple, expressive, and integrated with the language and build system. You can:
+- Use assertions to validate logic.
+- Handle panic scenarios.
+- Return `Result` types.
+- See clear output for failures.
+
+# Controlling How Tests Are Run in Rust
+
+Rust's `cargo test` command compiles your code in test mode and runs the resulting test binary. By default, all tests run in parallel, and output is captured for clarity. However, you can control test behavior through command-line options.
+
+## Running Tests in Parallel or Sequentially
+
+By default, Rust runs tests in **parallel**, using multiple threads to speed up test execution. This is great for performance but can cause issues if tests share state (e.g., writing to the same file).
+
+### Example Problem
+If multiple tests write to `test-output.txt`, one might overwrite the other's data, leading to incorrect test failures.
+
+### Solution
+Use different files per test or run tests **sequentially**:
+
+```sh
+cargo test -- --test-threads=1
+```
+
+## Controlling Output
+
+### Default Behavior
+Rust **suppresses output** (e.g., `println!`) from successful tests.
+
+- Only output from **failing tests** is shown by default.
+
+### Example:
+```rust
+fn prints_and_returns_10(a: i32) -> i32 {
+    println!("I got the value {a}");
+    10
+}
+```
+
+To see output from **passing tests**, use:
+
+```sh
+cargo test -- --show-output
+```
+
+## Running a Subset of Tests
+
+When working on a specific part of your code, it's efficient to run only related tests.
+
+### Define Test Functions
+```rust
+#[test]
+fn add_two_and_two() {
+    assert_eq!(4, add_two(2));
+}
+
+#[test]
+fn add_three_and_two() {
+    assert_eq!(5, add_two(3));
+}
+
+#[test]
+fn one_hundred() {
+    assert_eq!(102, add_two(100));
+}
+```
+
+### Run a Single Test
+```sh
+cargo test one_hundred
+```
+
+### Run Multiple Tests (Using Name Filtering)
+```sh
+cargo test add
+```
+This runs any test with `add` in its name (e.g., `add_two_and_two`, `add_three_and_two`).
+
+## Ignoring Specific Tests
+
+Some tests might be **slow** or run under specific conditions only. You can mark these with `#[ignore]`:
+
+```rust
+#[test]
+fn it_works() {
+    assert_eq!(2 + 2, 4);
+}
+
+#[test]
+#[ignore]
+fn expensive_test() {
+    // long-running task
+}
+```
+
+### Run Default Tests (Ignored Tests Are Skipped)
+```sh
+cargo test
+```
+Output will indicate that `expensive_test` was ignored.
+
+### Run Only Ignored Tests
+```sh
+cargo test -- --ignored
+```
+
+### Run All Tests, Including Ignored
+```sh
+cargo test -- --include-ignored
+```
+
+## Summary
+
+You can control test execution in Rust by using:
+
+| Command | Description |
+|--------|-------------|
+| `cargo test` | Run all tests in parallel |
+| `cargo test -- --test-threads=1` | Run tests sequentially |
+| `cargo test -- --show-output` | Show output from passing tests |
+| `cargo test <name>` | Run specific test(s) |
+| `cargo test -- --ignored` | Run only ignored tests |
+| `cargo test -- --include-ignored` | Run all tests, including ignored ones |
+
+**Rust Test Organization: Unit and Integration Tests**
+
+Rust divides tests into two main categories: **unit tests** and **integration tests**. Both types help ensure that individual parts of your program work correctly on their own and when combined.
+
+---
+
+### Unit Tests
+
+Unit tests are focused, small, and test a single module in isolation. They can test private functions and are defined in the same file as the code they test.
+
+#### Where to Write Unit Tests
+- Unit tests are placed in the `src` directory.
+- Each file should have a `tests` module with `#[cfg(test)]`.
+- This tells Rust to compile this module **only when running tests**.
+
+#### Example Unit Test Setup
+```rust
+// src/lib.rs
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
+```
+
+#### Why #[cfg(test)]
+It avoids compiling test code when running `cargo build`, saving time and binary size.
+
+#### Testing Private Functions
+Even private functions can be tested because the `tests` module is a child module and can access parent scope:
+
+```rust
+fn internal_adder(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_internal_adder() {
+        assert_eq!(internal_adder(2, 2), 4);
+    }
+}
+```
+
+---
+
+### Integration Tests
+
+Integration tests verify that many parts of your crate work together correctly. These tests use your library **like an external crate**.
+
+#### Where to Write Integration Tests
+- Create a `tests/` directory at the top level of your project (next to `src`).
+- Each `.rs` file inside `tests/` is compiled as its **own crate**.
+
+#### Example Directory Layout
+```
+adder/
+├── Cargo.toml
+├── src/
+│   └── lib.rs
+└── tests/
+    └── integration_test.rs
+```
+
+#### Example Integration Test
+```rust
+// tests/integration_test.rs
+use adder;
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(adder::add_two(2), 4);
+}
+```
+
+Note: `use adder;` is required to bring the library crate into scope.
+
+---
+
+### Running Tests
+
+- Run all tests: `cargo test`
+- Run only one integration test file: `cargo test --test integration_test`
+
+---
+
+### Reusing Code in Integration Tests
+
+You might need helper functions shared across test files. To do this:
+
+1. Create a `tests/common/mod.rs` file:
+```rust
+// tests/common/mod.rs
+pub fn setup() {
+    // setup code here
+}
+```
+
+2. Use the module in test files:
+```rust
+// tests/integration_test.rs
+use adder;
+mod common;
+
+#[test]
+fn it_adds_two() {
+    common::setup();
+    assert_eq!(adder::add_two(2), 4);
+}
+```
+
+**Important:** Do NOT place helpers in `tests/common.rs`, or it will be treated as a test crate and show up as a test with 0 functions. Using `tests/common/mod.rs` avoids this.
+
+---
+
+### Integration Tests for Binary Crates
+
+If your project only has `src/main.rs`, you can’t test functions using `use` because binaries don’t expose public APIs.
+
+**Best practice:**
+- Move logic into `src/lib.rs`
+- Keep `src/main.rs` minimal and call into the library
+
+This allows:
+- Reuse of logic
+- Easy unit and integration testing via the library
+
+---
+
+### Summary
+- Use **unit tests** for isolated module-level testing
+- Use **integration tests** for testing public APIs and multi-module behavior
+- Structure your project to enable testing by splitting logic into `lib.rs`
+- Share test setup code using `tests/common/mod.rs`
+
+
 
