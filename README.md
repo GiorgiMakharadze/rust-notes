@@ -18,10 +18,154 @@
    - [Chapter 4 Summary](#chapter-4-summary)
 5. [Chapter 5: Structs in Rust](#chapter-5-structs-in-rust)
 6. [Chapter 6: Enums and Pattern Matching](#chapter-6-enums-and-pattern-matching)
-
-Here's the **corrected** Chapter 1 in `README.md` format with all the necessary improvements applied:  
+7. [Chapter 7: Managing Growing Projects with Packages, Crates, and Modules](#chapter-7---managing-growing-projects-with-packages-crates-and-modules)
+   - [Introduction: Why Organize Code?](#1-introduction-why-organize-code)
+   - [Packages and Crates](#2-packages-and-crates)
+   - [Modules: Organizing Code Inside a Crate](#3-modules-organizing-code-inside-a-crate)
+   - [Module File Structure in Rust](#4-module-file-structure-in-rust)
+   - [Controlling Scope & Visibility with pub](#5-controlling-scope--visibility-with-pub)
+   - [Paths and the use Keyword](#6-paths-and-the-use-keyword)
+   - [Summary of Key Concepts](#summary-of-key-concepts)
+8. [Chapter 8: Common Collections in Rust](#chapter-8---common-collections-in-rust)
+   - [Vectors (`Vec<T>`)](#2-storing-lists-of-values-with-vectors-vect)
+   - [Strings (`String`)](#storing-utf-8-encoded-text-with-strings)
+   - [Hash Maps (`HashMap<K, V>`)](#storing-keys-with-associated-values-in-hash-maps)
+   - [Chapter 8 Summary](#chapter-8-summary---common-collections-in-rust)
+9. [Chapter 9: Error Handling in Rust](#chapter-9---error-handling-in-rust)
+10. [Chapter 10: Generic Types, Traits, and Lifetimes](#chapter-10-generic-types-traits-and-lifetimes-in-rust)
+11. [Chapter 11: Traits in Rust](#understanding-traits-in-rust)
+12. [Chapter 12: Writing Automated Tests in Rust](#chapter-12---writing-automated-tests-in-rust)
 
 ```md
+
+---
+
+**Rust need to know all types at compile time**
+
+## 1. **Build Time vs Compile Time vs Run Time – What's the Difference?**
+
+### **Build Time** (Everything before execution)
+This is a general term that includes all steps involved in **producing the final executable program**, before you actually run it.
+
+In Rust, `cargo build` handles **build time**. This includes:
+
+- **Compiling** your Rust code into machine code (`.exe`, `.out`, etc.)
+- **Linking** with external libraries (for example, when you use `rand`, `serde`, or the standard library).
+- **Packaging** the final binary (the output file you run).
+
+Build time is a broad umbrella.
+
+---
+
+### **Compile Time** (A phase within build time)
+This is a **specific part** of build time. It’s when the compiler (Rust’s `rustc`) takes your `.rs` source files and checks them **for correctness** and **transforms them into lower-level instructions**.
+
+The Rust compiler performs several important checks during this time:
+
+1. **Syntax & Grammar**  
+   Does your code follow the rules of the language?
+
+2. **Type Checking**  
+   Are your variables and functions used with the correct types?
+   - Example: Adding a number to a string? That’s invalid in Rust.
+     ```rust
+     let x = 5 + "hello"; // Compile-time error
+     ```
+
+3. **Borrow Checker**  
+   Rust ensures memory safety using its ownership system.
+   - It checks that references (`&x`, `&mut x`) are valid and safe.
+   - You cannot use a variable after moving it or while it's borrowed elsewhere.
+
+4. **Monomorphization** (when using generics)
+   - If you use generics (like `fn print<T>(value: T)`), Rust **generates a concrete version** of that function for every type you use it with.
+   - This means Rust code is zero-cost: generics don’t add overhead at runtime.
+
+If there’s any problem during compile time, **Rust refuses to build the binary**. No bugs sneak into runtime due to type or ownership errors.
+
+---
+
+### **Run Time** (After successful compilation)
+This is when you **run the binary** file that was created by the compiler.
+
+- Your program logic (like `main()`) executes.
+- It reads files, gets user input, makes API calls, etc.
+- If anything goes wrong here (like trying to read a missing file), that’s a **runtime error**.
+
+Runtime is real-world behavior. Compile time is like a safety inspection.
+
+---
+
+## 2. **Rust Execution Flow (What Happens in Order?)**
+
+| Step | Phase | What Happens |
+|------|-------|---------------|
+| 1.   | You write code | In `main.rs`, etc. |
+| 2.   | **Build time** (cargo build) | Syntax checks, type checks, borrow checking |
+| 3.   | **Compile time** | Code turns into machine code (`.exe`, etc.) |
+| 4.   | **Run time** | Program is executed; logic runs |
+
+---
+
+## 3. **What is a "Statically Typed Language"?**
+
+> Rust is a **statically typed** language.
+
+### What does this mean?
+
+- **All types are known at compile time.**
+- You can’t have a variable that changes from an integer to a string at runtime.
+- The **compiler must know the type** of every variable, function parameter, and return value **before** it generates the final executable.
+
+### For example:
+
+```rust
+let x: i32 = 5;
+let y: String = "hello".to_string();
+```
+
+Here, Rust knows:
+- `x` is an `i32` (a 32-bit integer)
+- `y` is a `String` (owned string type)
+
+---
+
+### If you try this:
+```rust
+let x: i32 = "oops"; // Compile-time error!
+```
+Rust says: "You told me `x` is an integer, but you're giving me a string. That's invalid."
+
+---
+
+### Contrast: **Dynamically Typed Languages**
+Languages like **Python** or **JavaScript** don’t check types until the program runs.
+
+```python
+x = 5
+x = "hello"  # Totally fine in Python
+```
+
+In these languages:
+- You can assign a number to `x`, and later reassign a string.
+- The language does not enforce types — errors happen **during execution**, not before.
+
+---
+
+## So Why Does Rust Need Types Before Compilation?
+
+Because Rust **generates machine code specific to the types** you use. This gives you:
+
+1. **Speed** – There’s no type guessing at runtime. Rust binaries are super fast.
+2. **Safety** – Many bugs (nulls, type mismatches, memory leaks) are caught **before** the program runs.
+3. **Optimization** – Knowing the exact types allows the compiler to optimize your code heavily.
+
+This also explains why:
+- You need to tell Rust what type your variable is (or let it infer it once and lock it in).
+- Rust can’t compile if types are ambiguous or misused.
+
+---
+
 # Chapter 1: Rust Basics
 
 ## File Naming
@@ -44,7 +188,7 @@ Proper formatting improves code readability and maintainability.
 - **Explanation:**  
   - This command automatically applies Rust’s style guidelines, ensuring that your code has consistent indentation, spacing, and line breaks. This not only makes your code look neat but also reduces the cognitive load when reading or reviewing code.  
 
-## Macros
+## Macros(Not finished, see next chapters)
 Macros in Rust differ from functions and have unique behavior.  
 
 - **Key Point:**  
@@ -83,8 +227,10 @@ cargo run             # Builds (if necessary) and runs the project.
 cargo check           # Analyzes your code for errors without producing an executable binary.
 cargo build --release # Builds an optimized binary suitable for production.
 ```
+'
+rustc --explain E0004 (E0004 is a error code every error have a code)
 - **Explanation:**  
-  - These commands help you quickly iterate on your code. For example, `cargo check` is particularly useful during development because it is faster than a full build, allowing you to catch errors early.  
+  - These commands help you quickly iterate on your code. For example, `cargo check` is particularly useful during development because it is faster than a full build, allowing you to catch errors early.
 
 ## Project Structure (from `cargo new my_app`)
 When you create a new project using Cargo, it sets up a standard directory layout:  
@@ -177,7 +323,7 @@ let spaces = spaces.len();  // Shadowed variable becomes a number.
 **Using `mut` (Error):**
 ```rust
 let mut spaces = "   ";  
-spaces = spaces.len();  // ❌ Error: The type cannot change.
+spaces = spaces.len();  // Error: The type cannot change.
 ```
 - **Key Point:**  
   - Mutability only permits the modification of the value without altering its type. When you need to change the type, shadowing is the appropriate approach.
@@ -193,26 +339,38 @@ spaces = spaces.len();  // ❌ Error: The type cannot change.
 #### 1) Scalar Types (Single Value)
 Rust has four primary scalar types that represent a single value:
 - **Integers:** Include types such as `i8`, `u8`, `i16`, `u16`, etc.
-- **Floating-point Numbers:** `f32` and `f64`.
+- **Floating-point Numbers:** `f32` and `f64`(is default type for floating-type).
 - **Booleans:** Represent true or false values.
-- **Characters:** Represent a single Unicode character.
+- **Characters:** Represent a single Unicode character. (string with '' and not "")
 
 ##### Integer Types
 - **Details:**
   - **Signed integers** can represent both negative and positive values.
   - **Unsigned integers** represent only positive values (including zero).
   
-| Length  | Signed  | Unsigned |
-|---------|---------|----------|
-| 8-bit   | `i8`    | `u8`     |
-| 16-bit  | `i16`   | `u16`    |
-| 32-bit  | `i32`   | `u32`    | --> `i32` i a default integer type
-| 64-bit  | `i64`   | `u64`    |
-| 128-bit | `i128`  | `u128`   |
-| Arch    | `isize` | `usize`  |
+| Length   | Signed  | Unsigned | Memory (Bytes) |
+|----------|---------|----------|----------------|
+| 8-bit    | `i8`    | `u8`     | 1 byte         |
+| 16-bit   | `i16`   | `u16`    | 2 bytes        |
+| 32-bit   | `i32`   | `u32`    | 4 bytes        | --> i32 is the default integer type 
+| 64-bit   | `i64`   | `u64`    | 8 bytes        |
+| 128-bit  | `i128`  | `u128`   | 16 bytes       |
+| Arch     | `isize` | `usize`  | 4 or 8 bytes¹  |
+
 
 - **Explanation:**  
-  - Choosing the correct integer type is important for performance and memory usage. The table above helps you understand the trade-offs between different sizes and whether you need signed or unsigned values.
+  - Choosing the correct integer type is important for performance and memory usage, because 8 bit is 1 byte and if you need number maximum positive number 255 you can choose u8(0-255) and not u16(0-66,535) which will take double memory size. The table above helps you understand the trade-offs between different sizes and whether you need signed or unsigned values.
+
+##### What is `isize` and `usize`?
+
+- These types are **architecture-dependent**:
+  - On **32-bit systems**, they are **4 bytes** (like `i32`/`u32`)
+  - On **64-bit systems**, they are **8 bytes** (like `i64`/`u64`)
+- They're primarily used for indexing collections (like arrays, slices, vectors) or representing sizes in memory because they match the pointer size of the platform.
+- **Use case:** When you call `.len()` on a vector or access `arr[index]`, the index will usually be a `usize`.
+
+> Always use `usize` or `isize` when dealing with memory offsets, indexing, or sizes of data structures.
+
 
 ##### Integer Literals in Rust
 
@@ -675,7 +833,7 @@ fn take_ownership(s: String) {
 fn main() {
     let my_string = String::from("Hello, Rust!");
     take_ownership(my_string);
-    // println!("{}", my_string); // ❌ Error: `my_string` is moved
+    // println!("{}", my_string); // Error: `my_string` is moved
 }
 ```
 #### **Behavior**
@@ -699,7 +857,7 @@ fn borrow_string(s: &String) {
 fn main() {
     let my_string = String::from("Hello, Rust!");
     borrow_string(&my_string);
-    println!("{}", my_string); // ✅ Still valid!
+    println!("{}", my_string); // Still valid!
 }
 ```
 #### **Behavior**
@@ -743,10 +901,10 @@ fn display_message(message: &str) {
 
 fn main() {
     let my_string = String::from("Dynamic Rust!");
-    display_message(&my_string); // ✅ Implicit conversion: `&String` → `&str`
+    display_message(&my_string); // Implicit conversion: `&String` → `&str`
     
     let my_literal = "Hardcoded Rust!";
-    display_message(my_literal); // ✅ Direct `&str`
+    display_message(my_literal); // Direct `&str`
 }
 ```
 ### **Behavior**
@@ -788,7 +946,8 @@ When we pass a variable to a function, it behaves just like assigning it to anot
 ```rust
 let s1 = String::from("hello"); 
 let s2 = s1; //Ownership moves to s2, s1 is no longer valid.
-````
+```
+
 In Functions
 
 - Function parameters follow the same rules of ownership **(copying vs. moving)**.
@@ -838,7 +997,7 @@ fn main() {
     let s1 = gives_ownership(); // s1 now owns the returned String.
     let s2 = String::from("hello");
     let s3 = takes_and_gives_back(s2); // s2 is moved; s3 now owns the String.
-    // println!("{s2}"); // ❌ Error: s2 has been moved.
+    // println!("{s2}"); // Error: s2 has been moved.
 }
 ```
 
@@ -870,10 +1029,10 @@ fn main() {
   - Using tuples to return multiple values is a common pattern in Rust. It prevents ownership from being lost while still providing multiple pieces of data to the caller.
 
 **Summary**
-✅ Ownership moves to functions unless the type implements Copy.
-✅ To retain ownership, return values from functions.
-✅ Tuples allow returning multiple values at once.
-✅ This prevents memory leaks while enforcing safety.
+Ownership moves to functions unless the type implements Copy.
+To retain ownership, return values from functions.
+Tuples allow returning multiple values at once.
+This prevents memory leaks while enforcing safety.
 
 ---
 
@@ -916,7 +1075,7 @@ fn calculate_length(s: String) -> usize {
 fn main() {
     let s1 = String::from("hello");
     let len = calculate_length(s1); // Ownership of s1 is moved.
-    println!("The length of '{s1}' is {len}"); // ❌ Error: s1 is no longer valid.
+    println!("The length of '{s1}' is {len}"); // Error: s1 is no longer valid.
 }
 ```
 - **Explanation:**  
@@ -955,7 +1114,7 @@ fn main() {
   
 ```rust
 fn change(some_string: &String) {
-    some_string.push_str(", world"); // ❌ Error: Cannot modify immutable reference.
+    some_string.push_str(", world"); // Error: Cannot modify immutable reference.
 }
 ```
 ⛔ Error:
@@ -991,11 +1150,11 @@ fn main() {
 - **Explanation:**  
   - Mutable references give you the flexibility to alter data without transferring ownership. However, to avoid conflicts and data races, Rust enforces that only one mutable reference exists at a time.
  Summary
-✅ References (&) allow functions to use a value without taking ownership.
-✅ Borrowing lets us pass data while keeping the original variable valid.
-✅ By default, references are immutable (&T).
-✅ To modify a reference, use mutable references (&mut T).
-✅ Rust prevents multiple mutable references to avoid data races.
+References (&) allow functions to use a value without taking ownership.
+Borrowing lets us pass data while keeping the original variable valid.
+By default, references are immutable (&T).
+To modify a reference, use mutable references (&mut T).
+Rust prevents multiple mutable references to avoid data races.
 
 ---
 
@@ -1023,7 +1182,7 @@ fn main() {
       let mut s = String::from("hello");
 
       let r1 = &mut s; 
-      let r2 = &mut s; // ❌ Error: Cannot have more than one mutable reference at a time.
+      let r2 = &mut s; // Error: Cannot have more than one mutable reference at a time.
       
       println!("{r1}, {r2}");
   }
@@ -1060,7 +1219,7 @@ Data Races
 
       let r1 = &s; // Immutable reference.
       let r2 = &s; // Another immutable reference.
-      let r3 = &mut s; // ❌ Error: Cannot have a mutable reference while immutable ones exist.
+      let r3 = &mut s; // Error: Cannot have a mutable reference while immutable ones exist.
       
       println!("{r1}, {r2}, and {r3}");
   }
@@ -1072,7 +1231,7 @@ Data Races
 
 The Rust compiler is smart enough to detect when an immutable reference is no longer needed before allowing a mutable reference.
 
-- **Example:✅ Allowed Since Immutable References Are No Longer Used**
+- **Example:Allowed Since Immutable References Are No Longer Used**
   ```rust
   fn main() {
       let mut s = String::from("hello");
@@ -1113,11 +1272,11 @@ void read() {
 - Rust **prevents this at compile time** by **restricting multiple references to mutable data**.
 
 ### Key Takeaways  
-✅ **Mutable references (`&mut`) allow modifying borrowed data without transferring ownership.**  
-✅ **Rust prevents multiple mutable references at the same time to avoid data races.**  
-✅ **Mutable references cannot coexist with immutable references to ensure data consistency.**  
-✅ **Using scopes (`{}`) lets us reuse mutable references safely.**  
-✅ **Rust prevents undefined behavior by enforcing safe memory access rules at compile time.**  
+**Mutable references (`&mut`) allow modifying borrowed data without transferring ownership.**  
+**Rust prevents multiple mutable references at the same time to avoid data races.**  
+**Mutable references cannot coexist with immutable references to ensure data consistency.**  
+**Using scopes (`{}`) lets us reuse mutable references safely.**  
+**Rust prevents undefined behavior by enforcing safe memory access rules at compile time.**  
 
 ###  Dangling References in Rust
 
@@ -1129,12 +1288,12 @@ In many languages (like **C/C++**), it’s possible to create a **dangling point
 ```c
 int* create_dangling_pointer() {
     int x = 42;  // x is a local variable
-    return &x;   // ❌ ERROR: Returning a pointer to `x`, which will be destroyed!
+    return &x;   // ERROR: Returning a pointer to `x`, which will be destroyed!
 }
 
 int main() {
     int* p = create_dangling_pointer();  // `p` now points to invalid memory!
-    printf("%d", *p); // ❌ Undefined behavior: memory has been freed!
+    printf("%d", *p); // Undefined behavior: memory has been freed!
 }
 ```
 ✔ **This can lead to crashes or memory corruption** because the **memory is already freed**.  
@@ -1146,13 +1305,13 @@ If a reference might become **invalid**, Rust **won’t compile the code**.
 
 ##### **Example: Dangling Reference in Rust (Compile-Time Error)**
 ```rust
-fn dangle() -> &String { // ❌ ERROR: Returning a reference to a local variable
+fn dangle() -> &String { // ERROR: Returning a reference to a local variable
     let s = String::from("hello"); // `s` is created inside the function
-    &s // ❌ ERROR: `s` will be dropped at the end of the function!
+    &s // ERROR: `s` will be dropped at the end of the function!
 } // `s` is deallocated here!
 
 fn main() {
-    let reference_to_nothing = dangle(); // ❌ Compilation fails
+    let reference_to_nothing = dangle(); // Compilation fails
 }
 ```
 ⛔ **Error Message:**
@@ -1171,13 +1330,13 @@ Instead of returning a **reference to a local variable**, **move ownership out o
 #### **3️⃣ Example: Fixing the Dangling Reference**
 ```rust
 fn no_dangle() -> String {
-    let s = String::from("hello"); // ✅ `s` is created
-    s // ✅ Ownership is moved instead of returning a reference
+    let s = String::from("hello"); // `s` is created
+    s // Ownership is moved instead of returning a reference
 }
 
 fn main() {
-    let valid_string = no_dangle(); // ✅ `valid_string` now owns the String
-    println!("{valid_string}"); // ✅ Works fine!
+    let valid_string = no_dangle(); // `valid_string` now owns the String
+    println!("{valid_string}"); // Works fine!
 }
 ```
 ✔ Instead of returning a **reference**, `s` is **moved out of the function**.  
@@ -1186,27 +1345,27 @@ fn main() {
 #### The Rules of References in Rust
 Rust follows **strict borrowing rules** to prevent **dangling references**:
 
-#### ✅ **1. At any given time, you can have either:**
+#### **1. At any given time, you can have either:**
    - **One mutable reference (`&mut`)**  
    - **OR multiple immutable references (`&`)**  
-   - ❌ **You cannot have both at the same time**  
+   - **You cannot have both at the same time**  
 
-#### ✅ **2. References Must Always Be Valid**
+#### **2. References Must Always Be Valid**
    - **You cannot return a reference to a variable that will be dropped.**
    - **Rust ensures references always point to live data.**
 
 #### **Summary**
-✅ **Dangling references happen when a pointer refers to invalid memory.**  
-✅ **Rust prevents dangling references by enforcing ownership and borrowing rules.**  
-✅ **A function cannot return a reference to a local variable (use ownership instead).**  
-✅ **Rust ensures references always point to valid data at compile time.**  
+**Dangling references happen when a pointer refers to invalid memory.**  
+**Rust prevents dangling references by enforcing ownership and borrowing rules.**  
+**A function cannot return a reference to a local variable (use ownership instead).**  
+**Rust ensures references always point to valid data at compile time.**  
 
 ### **Why This Matters**
 - **Rust eliminates entire classes of memory safety bugs** by **enforcing strict reference rules**.  
 - **Many languages allow dangling pointers, leading to crashes**—but Rust prevents them **before the program runs**.  
 - **Mastering references is key** to writing **safe and efficient Rust programs**.
 
-### The Slice Type in Rust
+# The Slice Type in Rust
 
 #### 🔹 What Is a Slice?
 A **slice** is a **reference to a part of a collection** instead of the whole collection.  
@@ -1223,21 +1382,21 @@ Imagine we need to **find the first word** in a string.
 #### **1️⃣ Attempt Without Using Slices**
 ```rust
 fn first_word(s: &String) -> usize {
-    let bytes = s.as_bytes(); // ✅ Convert String to bytes
+    let bytes = s.as_bytes(); // Convert String to bytes
 
-    for (i, &item) in bytes.iter().enumerate() { // ✅ Iterate through characters
-        if item == b' ' { // ✅ Check for space
-            return i; // ✅ Return index of space
+    for (i, &item) in bytes.iter().enumerate() { // Iterate through characters
+        if item == b' ' { // Check for space
+            return i; // Return index of space
         }
     }
-    s.len() // ✅ If no space found, return full length
+    s.len() // If no space found, return full length
 }
 
 fn main() {
     let mut s = String::from("hello world");
     let word = first_word(&s); // word = 5
 
-    s.clear(); // ❌ Now `word` is invalid because `s` is empty!
+    s.clear(); // Now `word` is invalid because `s` is empty!
 }
 ```
 ### **❌ Problem with This Approach**
@@ -1246,7 +1405,7 @@ fn main() {
 - **Bug-prone**: If `s` changes, `word` may reference non-existent data.
  **Solution: Use Slices to Return a Valid Part of the String!**  
 
-#### 🔹 ✅ Solution: String Slices
+#### 🔹 Solution: String Slices
 A **string slice** is a reference **to a portion of a `String`**, ensuring **it remains valid**.
 
 ##### **2️⃣ Example: Using Slices**
@@ -1254,8 +1413,8 @@ A **string slice** is a reference **to a portion of a `String`**, ensuring **it 
 fn main() {
     let s = String::from("hello world");
 
-    let hello = &s[0..5]; // ✅ Slice: "hello"
-    let world = &s[6..11]; // ✅ Slice: "world"
+    let hello = &s[0..5]; // Slice: "hello"
+    let world = &s[6..11]; // Slice: "world"
 
     println!("{hello} {world}"); // Output: hello world
 }
@@ -1270,9 +1429,9 @@ Rust allows **shorter syntax** for common slice cases:
 
 ```rust
 let s = String::from("hello");
-let slice1 = &s[..2]; // ✅ Same as &s[0..2]
-let slice2 = &s[3..]; // ✅ Same as &s[3..s.len()]
-let slice3 = &s[..];  // ✅ Same as &s[0..s.len()]
+let slice1 = &s[..2]; // Same as &s[0..2]
+let slice2 = &s[3..]; // Same as &s[3..s.len()]
+let slice3 = &s[..];  // Same as &s[0..s.len()]
 ```
 ✔ `[..2]` means **"from start to index 2"**.  
 ✔ `[3..]` means **"from index 3 to the end"**.  
@@ -1284,22 +1443,22 @@ Using a slice ensures **the returned data remains valid**.
 #### Correct Version of `first_word()`**
 ```rust
 fn first_word(s: &String) -> &str {
-    let bytes = s.as_bytes(); // ✅ Convert to bytes
+    let bytes = s.as_bytes(); // Convert to bytes
 
-    for (i, &item) in bytes.iter().enumerate() { // ✅ Loop through characters
+    for (i, &item) in bytes.iter().enumerate() { // Loop through characters
         if item == b' ' {
-            return &s[0..i]; // ✅ Return slice from start to space
+            return &s[0..i]; // Return slice from start to space
         }
     }
-    &s[..] // ✅ If no space, return entire string
+    &s[..] // If no space, return entire string
 }
 
 fn main() {
     let mut s = String::from("hello world");
-    let word = first_word(&s); // ✅ "hello"
+    let word = first_word(&s); // "hello"
 
-    // ❌ ERROR: This will now fail to compile!
-    s.clear(); // ❌ We cannot clear `s` while `word` is in use
+    // ERROR: This will now fail to compile!
+    s.clear(); // We cannot clear `s` while `word` is in use
     println!("The first word is: {word}");
 }
 ```
@@ -1323,7 +1482,7 @@ Rust allows **string slices (`&str`) to work with both `String` and string liter
 
 #### **Improved `first_word()` (More Flexible)**
 ```rust
-fn first_word(s: &str) -> &str { // ✅ Works for &String and &str
+fn first_word(s: &str) -> &str { // Works for &String and &str
     let bytes = s.as_bytes();
 
     for (i, &item) in bytes.iter().enumerate() {
@@ -1337,13 +1496,13 @@ fn first_word(s: &str) -> &str { // ✅ Works for &String and &str
 fn main() {
     let my_string = String::from("hello world");
 
-    let word1 = first_word(&my_string[..]); // ✅ Pass slice of `String`
-    let word2 = first_word(&my_string);     // ✅ Works with &String
+    let word1 = first_word(&my_string[..]); // Pass slice of `String`
+    let word2 = first_word(&my_string);     // Works with &String
 
     let my_string_literal = "hello world";
 
-    let word3 = first_word(&my_string_literal[..]); // ✅ Pass slice of string literal
-    let word4 = first_word(my_string_literal);     // ✅ Works directly with &str
+    let word3 = first_word(&my_string_literal[..]); // Pass slice of string literal
+    let word4 = first_word(my_string_literal);     // Works directly with &str
 }
 ```
 ✔ **Works for both `String` and `&str`**, making it more useful.  
@@ -1358,7 +1517,7 @@ Slices work for **arrays** too!
 fn main() {
     let a = [1, 2, 3, 4, 5];
 
-    let slice = &a[1..3]; // ✅ Slice of `[2, 3]`
+    let slice = &a[1..3]; // Slice of `[2, 3]`
     assert_eq!(slice, &[2, 3]);
 
     println!("{:?}", slice); // Output: [2, 3]
@@ -1369,12 +1528,12 @@ fn main() {
  **Array slices work just like string slices and are just as safe!**  
 
 #### Summary
-✅ **Slices (`&[start..end]`) reference a portion of a collection without taking ownership.**  
-✅ **String slices (`&str`) prevent out-of-sync indexes and borrowing errors.**  
-✅ **Rust ensures slices are always valid, preventing bugs at compile time.**  
-✅ **String literals (`&str`) are slices stored in the binary and are immutable.**  
-✅ **Slices work for both `String` and `&str`, making APIs more flexible.**  
-✅ **Array slices (`&[i32]`) work the same way as string slices.**  
+**Slices (`&[start..end]`) reference a portion of a collection without taking ownership.**  
+**String slices (`&str`) prevent out-of-sync indexes and borrowing errors.**  
+**Rust ensures slices are always valid, preventing bugs at compile time.**  
+**String literals (`&str`) are slices stored in the binary and are immutable.**  
+**Slices work for both `String` and `&str`, making APIs more flexible.**  
+**Array slices (`&[i32]`) work the same way as string slices.**  
 
 ### **Why This Matters**
 - **Slices solve real-world memory safety issues** by keeping references **valid and in sync** with the data.  
@@ -1405,11 +1564,12 @@ Ownership **affects all aspects of Rust programming**, making it essential to un
 ```rust
 fn main() {
     let s1 = String::from("hello");
-    let s2 = s1;  // ✅ Ownership moves from `s1` to `s2`
+    let s2 = s1;  // Ownership moves from `s1` to `s2`
     
-    println!("{s1}"); // ❌ ERROR: `s1` is invalid after move!
+    println!("{s1}"); // ERROR: `s1` is invalid after move!
 }
-``` **Rust prevents multiple variables from freeing the same memory (double-free error).**  
+```
+**Rust prevents multiple variables from freeing the same memory (double-free error).**  
 
 #### Borrowing and References: Using Data Without Taking Ownership
 Borrowing allows functions to **access** data **without taking ownership**.
@@ -1417,12 +1577,12 @@ Borrowing allows functions to **access** data **without taking ownership**.
 #### References (`&T` - Immutable Borrowing)
 ```rust
 fn calculate_length(s: &String) -> usize { 
-    s.len()  // ✅ `s` is borrowed, not moved
+    s.len()  // `s` is borrowed, not moved
 }
 
 fn main() {
     let s = String::from("hello");
-    let len = calculate_length(&s); // ✅ Borrow `s` without ownership transfer
+    let len = calculate_length(&s); // Borrow `s` without ownership transfer
     println!("Length: {len}");
 }
 ```
@@ -1435,12 +1595,12 @@ If we need to modify borrowed data, we use **mutable references (`&mut`)**.
 
 ```rust
 fn change(some_string: &mut String) {
-    some_string.push_str(", world"); // ✅ Allowed with `&mut`
+    some_string.push_str(", world"); // Allowed with `&mut`
 }
 
 fn main() {
     let mut s = String::from("hello");
-    change(&mut s); // ✅ Mutable borrow
+    change(&mut s); // Mutable borrow
     println!("{s}"); // Output: "hello, world"
 }
 ```
@@ -1453,11 +1613,11 @@ Rust **prevents dangling references** at compile time.
 ```rust
 fn dangle() -> &String { 
     let s = String::from("hello"); // `s` is created inside the function
-    &s // ❌ ERROR: `s` will be dropped at the end of the function!
+    &s // ERROR: `s` will be dropped at the end of the function!
 }
 
 fn main() {
-    let ref_to_nothing = dangle(); // ❌ Compile-time error
+    let ref_to_nothing = dangle(); // Compile-time error
 }
 ```
 ✔ Rust **ensures all references are valid** before allowing compilation.  
@@ -1466,7 +1626,7 @@ fn main() {
 ```rust
 fn no_dangle() -> String {
     let s = String::from("hello");
-    s // ✅ Ownership moves out instead of returning a reference
+    s // Ownership moves out instead of returning a reference
 }
 ```
 
@@ -1479,7 +1639,7 @@ fn first_word(s: &String) -> &str {
 
     for (i, &item) in bytes.iter().enumerate() {
         if item == b' ' {
-            return &s[0..i]; // ✅ Return slice instead of index
+            return &s[0..i]; // Return slice instead of index
         }
     }
     &s[..]
@@ -1491,18 +1651,18 @@ fn first_word(s: &String) -> &str {
 #### Array Slices Also Work the Same Way
 ```rust
 let a = [1, 2, 3, 4, 5];
-let slice = &a[1..3]; // ✅ Slice of `[2, 3]`
+let slice = &a[1..3]; // Slice of `[2, 3]`
 println!("{:?}", slice); // Output: [2, 3]
 ```
 ✔ **Slices ensure safe and efficient access to collections.**  
 
 #### Summary of Chapter 4
-✅ **Ownership ensures each value has a single owner, preventing memory errors.**  
-✅ **Borrowing (`&T`) allows safe access to data without moving ownership.**  
-✅ **Mutable references (`&mut T`) allow controlled modification while preventing data races.**  
-✅ **Rust prevents dangling references at compile time.**  
-✅ **Slices (`&[T]`) provide safe, efficient access to parts of collections.**  
-✅ **Rust’s ownership model eliminates memory safety bugs without garbage collection.**  
+**Ownership ensures each value has a single owner, preventing memory errors.**  
+**Borrowing (`&T`) allows safe access to data without moving ownership.**  
+**Mutable references (`&mut T`) allow controlled modification while preventing data races.**  
+**Rust prevents dangling references at compile time.**  
+**Slices (`&[T]`) provide safe, efficient access to parts of collections.**  
+**Rust’s ownership model eliminates memory safety bugs without garbage collection.**  
 
 #### **Why This Matters**
 - **Ownership and borrowing are the foundation of Rust’s memory safety model.**  
@@ -1578,7 +1738,7 @@ fn main() {
         sign_in_count: 1,
     };
 
-    user1.email = String::from("anotheremail@example.com"); // ✅ Allowed since `user1` is mutable
+    user1.email = String::from("anotheremail@example.com"); // Allowed since `user1` is mutable
 }
 ```
 ✔ **Rust does not allow partial mutability**—the whole instance must be `mut`.
@@ -1618,7 +1778,7 @@ fn main() {
 
     let user2 = User {
         email: String::from("another@example.com"),
-        ..user1 // ✅ Copies remaining fields from `user1` using struct update syntax
+        ..user1 // Copies remaining fields from `user1` using struct update syntax
     };
 }
 ```
@@ -1648,7 +1808,7 @@ fn main() {
         ..user1 // Moves `username` field
     };
     
-    // println!("{}", user1.username); // ❌ ERROR: user1.username was moved
+    // println!("{}", user1.username); // ERROR: user1.username was moved
 }
 ```
 ✔ `user1.username` **was moved** into `user2`, making `user1` invalid.
@@ -1678,10 +1838,10 @@ fn main() {
 }
 ```
 #### **Key Takeaways**
-✅ **Each tuple struct is its own type**  
-✅ **Even if fields have the same types, instances are distinct**  
-✅ **Useful when naming individual fields is unnecessary**  
-✅ **Prevents mixing up different data types unintentionally**  
+**Each tuple struct is its own type**  
+**Even if fields have the same types, instances are distinct**  
+**Useful when naming individual fields is unnecessary**  
+**Prevents mixing up different data types unintentionally**  
 
 #### **Accessing Tuple Struct Fields**
 Tuple struct instances behave like regular tuples, allowing:
@@ -1706,9 +1866,9 @@ fn main() {
 }
 ```
 #### **Use Cases for Unit-Like Structs**
-✅ **Useful when implementing traits without storing data**  
-✅ **Can serve as markers or flags in the type system**  
-✅ **Acts similarly to `()` (unit type) but provides a unique type**  
+**Useful when implementing traits without storing data**  
+**Can serve as markers or flags in the type system**  
+**Acts similarly to `()` (unit type) but provides a unique type**  
 
 ---
 
@@ -1733,7 +1893,7 @@ Using references (`&str`) inside structs introduces **lifetime complexities**, r
 ```rust
 struct User {
     active: bool,
-    username: &str,  // ❌ Error: Reference stored without specifying a lifetime
+    username: &str,  // Error: Reference stored without specifying a lifetime
     email: &str,
     sign_in_count: u64,
 }
@@ -1774,14 +1934,14 @@ struct User {
 ```
 
 ### **Key Takeaways**
-✅ **Structs** allow grouping related data with named fields.
-✅ **Instances** are created using key-value pairs inside `{}`.
-✅ **Dot notation** provides easy access to struct fields.
-✅ **Entire instances must be mutable** to modify fields.
-✅ **Field init shorthand** simplifies struct instantiation.
-✅ **Struct update syntax (`..existing_instance`)** allows efficient creation of new instances.
-✅ **Heap-allocated fields (`String`) are moved, invalidating the original instance.**
-✅ **Stack-only fields (`bool`, `u64`) are copied, leaving the original instance usable.**
+**Structs** allow grouping related data with named fields.
+**Instances** are created using key-value pairs inside `{}`.
+**Dot notation** provides easy access to struct fields.
+**Entire instances must be mutable** to modify fields.
+**Field init shorthand** simplifies struct instantiation.
+**Struct update syntax (`..existing_instance`)** allows efficient creation of new instances.
+**Heap-allocated fields (`String`) are moved, invalidating the original instance.**
+**Stack-only fields (`bool`, `u64`) are copied, leaving the original instance usable.**
 
 
 ## **Debugging Structs in Rust**
@@ -1960,7 +2120,7 @@ fn main() {
 }
 ```
 
-✅ **Key Details:**
+**Key Details:**
 - **`impl Rectangle {}`** → Starts the implementation block for `Rectangle`.
 - **`fn area(&self) -> u32 {}`** → Defines a method **inside** the `impl` block.
 - **`&self`**:
@@ -2002,9 +2162,9 @@ impl Rectangle {
 ---
 
 ## * Why Use Methods Instead of Functions?**
-✅ **More Organized Code**: Methods keep related functionality inside the `impl` block, making the code **easier to read and maintain**.  
-✅ **Method Syntax is Cleaner**: Instead of `area(rect)`, we can simply call `rect.area()`.  
-✅ **Avoids Repeating Type Definitions**: No need to repeatedly specify `Rectangle` in function parameters.  
+**More Organized Code**: Methods keep related functionality inside the `impl` block, making the code **easier to read and maintain**.  
+**Method Syntax is Cleaner**: Instead of `area(rect)`, we can simply call `rect.area()`.  
+**Avoids Repeating Type Definitions**: No need to repeatedly specify `Rectangle` in function parameters.  
 
 ---
 
@@ -2579,7 +2739,7 @@ Consider this incorrect Rust code:
 ```rust
 let x: i8 = 5;
 let y: Option<i8> = Some(5);
-let sum = x + y; // ❌ ERROR: Cannot add i8 and Option<i8>
+let sum = x + y; // ERROR: Cannot add i8 and Option<i8>
 ```
 #### **Compiler Error Output:**
 ```
@@ -2904,14 +3064,14 @@ if let Pattern = Expression {
 ## **Trade-offs Between `match` and `if let`**
 | Feature        | `match` | `if let` |
 |---------------|--------|---------|
-| Handles multiple cases? | ✅ Yes | ❌ No, only one case |
-| Enforces exhaustive checking? | ✅ Yes | ❌ No |
-| Verbosity | 🛑 More code | ✅ Less code |
-| Readability | Can be cluttered for simple cases | ✅ Simpler for single cases |
-| Error Prevention | ✅ Ensures all cases are handled | ❌ Might miss cases if not careful |
+| Handles multiple cases? | Yes | No, only one case |
+| Enforces exhaustive checking? | Yes | No |
+| Verbosity | 🛑 More code | Less code |
+| Readability | Can be cluttered for simple cases | Simpler for single cases |
+| Error Prevention | Ensures all cases are handled | Might miss cases if not careful |
 
  **Use `match` when handling multiple cases.**
-✅ **Use `if let` when handling only one case and ignoring the rest.**
+**Use `if let` when handling only one case and ignoring the rest.**
 
 ---
 ## **Using `if let` with `else`**
@@ -2973,9 +3133,9 @@ enum IpAddr {
 ## **2. Enums vs Structs: When to Use Each**
 | Feature            | Structs | Enums |
 |-------------------|--------|------|
-| **Grouping Data** | ✅ Related fields that must always be together | ✅ One of multiple predefined variants |
-| **Data Flexibility** | ❌ All fields must be present | ✅ Each variant can store different types of data |
-| **Pattern Matching** | ❌ Not applicable | ✅ Requires exhaustive handling of all cases |
+| **Grouping Data** | Related fields that must always be together | One of multiple predefined variants |
+| **Data Flexibility** | All fields must be present | Each variant can store different types of data |
+| **Pattern Matching** | Not applicable | Requires exhaustive handling of all cases |
 | **Use Case** | **User profiles, structured records** | **IP addresses, message types, states** |
 
 ✔ **Use Structs** when all fields are always required together.  
@@ -2996,7 +3156,7 @@ let absent_number: Option<i32> = None;
 ```rust
 let x: i8 = 5;
 let y: Option<i8> = Some(5);
-let sum = x + y; // ❌ ERROR: Cannot add i8 and Option<i8>
+let sum = x + y; // ERROR: Cannot add i8 and Option<i8>
 ```
 ✔ **To use an `Option<T>`, convert it using `match` or `unwrap_or()`:**
 ```rust
@@ -3073,12 +3233,12 @@ if let Coin::Quarter(state) = coin {
 
 ---
 ## **6. Key Takeaways from Chapter 6**
-✅ **Enums provide a way to define a type with multiple possible variants.**  
-✅ **Enums can store different types of data inside each variant.**  
-✅ **Rust’s `Option<T>` replaces `null`, preventing common errors.**  
-✅ **`match` ensures exhaustive handling of all cases, improving reliability.**  
-✅ **Use `if let` when matching only one variant for cleaner code.**  
-✅ **Enums + `match` are a powerful combination for handling different cases in a structured way.**
+**Enums provide a way to define a type with multiple possible variants.**  
+**Enums can store different types of data inside each variant.**  
+**Rust’s `Option<T>` replaces `null`, preventing common errors.**  
+**`match` ensures exhaustive handling of all cases, improving reliability.**  
+**Use `if let` when matching only one variant for cleaner code.**  
+**Enums + `match` are a powerful combination for handling different cases in a structured way.**
 
 # Chapter 7 - Managing Growing Projects with Packages, Crates, and Modules
 
@@ -3295,10 +3455,10 @@ hosting/add_to_waitlist  (relative)
 ## **When to Use Absolute vs. Relative Paths?**
 | **Scenario**                                  | **Use Absolute Path**| **Use Relative Path** |
 |-------------                                  |----------------------|-----------------------|
-| Referencing items from anywhere in the crate  |           ✅         |           ❌          |
-| Moving code within the same module            |           ❌         |           ✅          |
-| Code organization is stable and won’t move    |           ✅         |           ❌          |
-| Code structure may change in the future       |           ❌         |           ✅          |
+| Referencing items from anywhere in the crate  |                   |                    |
+| Moving code within the same module            |                   |                    |
+| Code organization is stable and won’t move    |                   |                    |
+| Code structure may change in the future       |                   |                    |
 
  **Best practice:**  
 Use **absolute paths** when code is spread across different modules.  
@@ -3318,8 +3478,8 @@ To **allow access to private modules and functions**, we use the `pub` (**public
  **Fixing the Error: Making `hosting` Public**
 ```rust
 mod front_of_house {
-    pub mod hosting { // ✅ Now public
-        pub fn add_to_waitlist() { // ✅ Now public
+    pub mod hosting { // Now public
+        pub fn add_to_waitlist() { // Now public
             println!("Added to waitlist");
         }
     }
@@ -3376,7 +3536,7 @@ fn deliver_order() {
 mod back_of_house {
     pub fn fix_incorrect_order() {
         cook_order();
-        super::deliver_order(); // ✅ Calls parent module function
+        super::deliver_order(); // Calls parent module function
     }
 
     fn cook_order() {
@@ -3401,8 +3561,8 @@ mod back_of_house {
 ```rust
 mod back_of_house {
     pub struct Breakfast {
-        pub toast: String,       // ✅ Public field
-        seasonal_fruit: String,  // ❌ Private field
+        pub toast: String,       // Public field
+        seasonal_fruit: String,  // Private field
     }
 
     impl Breakfast {
@@ -3418,11 +3578,11 @@ mod back_of_house {
 pub fn eat_at_restaurant() {
     let mut meal = back_of_house::Breakfast::summer("Rye");
 
-    // ✅ Allowed: `toast` is public
+    // Allowed: `toast` is public
     meal.toast = String::from("Wheat");
     println!("I'd like {} toast", meal.toast);
 
-    // ❌ Error: `seasonal_fruit` is private
+    // Error: `seasonal_fruit` is private
     // meal.seasonal_fruit = String::from("blueberries");
 }
 ```
@@ -3518,7 +3678,7 @@ use crate::front_of_house::hosting; // `use` applied at crate level
 
 mod customer {
     pub fn eat_at_restaurant() {
-        hosting::add_to_waitlist(); // ❌ ERROR! `use` is not in this module
+        hosting::add_to_waitlist(); // ERROR! `use` is not in this module
     }
 }
 ```
@@ -3527,10 +3687,10 @@ mod customer {
 
 ```rust
 mod customer {
-    use crate::front_of_house::hosting; // ✅ Declare `use` inside `customer`
+    use crate::front_of_house::hosting; // Declare `use` inside `customer`
     
     pub fn eat_at_restaurant() {
-        hosting::add_to_waitlist(); // ✅ Now it works!
+        hosting::add_to_waitlist(); // Now it works!
     }
 }
 ```
@@ -3544,16 +3704,16 @@ When importing items, Rust follows certain **best practices**:
 ```rust
 use crate::front_of_house::hosting::add_to_waitlist;
 pub fn eat_at_restaurant() {
-    add_to_waitlist(); // ❌ Where does this function come from?
+    add_to_waitlist(); // Where does this function come from?
 }
 ```
  **Problem**: It’s not obvious that `add_to_waitlist` is from `hosting`.  
 
 ### **👍 Good (Idiomatic Rust)**
 ```rust
-use crate::front_of_house::hosting; // ✅ Import the module
+use crate::front_of_house::hosting; // Import the module
 pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist(); // ✅ Clear where it comes from
+    hosting::add_to_waitlist(); // Clear where it comes from
 }
 ```
 ✔ This **reduces repetition** while keeping clarity.  
@@ -3562,7 +3722,7 @@ pub fn eat_at_restaurant() {
 For **structs, enums, and traits**, it's common to import them **directly**:
 
 ```rust
-use std::collections::HashMap; // ✅ Idiomatic for structs and enums
+use std::collections::HashMap; // Idiomatic for structs and enums
 
 fn main() {
     let mut map = HashMap::new();
@@ -3579,7 +3739,7 @@ Rust **does not allow** importing two items with the **same name**.
 ### **Example of Conflict**
 ```rust
 use std::fmt::Result;
-use std::io::Result; // ❌ ERROR: Two `Result`s in the same scope!
+use std::io::Result; // ERROR: Two `Result`s in the same scope!
 
 fn function1() -> Result {
     // std::fmt::Result
@@ -3594,14 +3754,14 @@ fn function2() -> Result<()> {
 use std::fmt;
 use std::io;
 
-fn function1() -> fmt::Result {}  // ✅ Clearly from `std::fmt`
-fn function2() -> io::Result<()> {}  // ✅ Clearly from `std::io`
+fn function1() -> fmt::Result {}  // Clearly from `std::fmt`
+fn function2() -> io::Result<()> {}  // Clearly from `std::io`
 ```
 
 ✔ **Fix 2: Rename Using `as`**
 ```rust
 use std::fmt::Result;
-use std::io::Result as IoResult; // ✅ Renamed to avoid conflict
+use std::io::Result as IoResult; // Renamed to avoid conflict
 
 fn function1() -> Result {} // `std::fmt::Result`
 fn function2() -> IoResult<()> {} // `std::io::Result`
@@ -3622,7 +3782,7 @@ mod front_of_house {
 }
 
 pub fn eat_at_restaurant() {
-    crate::front_of_house::hosting::add_to_waitlist(); // ❌ External users must write full path!
+    crate::front_of_house::hosting::add_to_waitlist(); // External users must write full path!
 }
 ```
  **Problem**: External users **must know** the internal structure (`front_of_house::hosting`).
@@ -3637,10 +3797,10 @@ mod front_of_house {
     }
 }
 
-pub use crate::front_of_house::hosting; // ✅ Expose `hosting` to external users
+pub use crate::front_of_house::hosting; // Expose `hosting` to external users
 
 pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist(); // ✅ Now accessible externally as `restaurant::hosting::add_to_waitlist`
+    hosting::add_to_waitlist(); // Now accessible externally as `restaurant::hosting::add_to_waitlist`
 }
 ```
 ✔ Now, external users can just **write**:
@@ -3663,7 +3823,7 @@ rand = "0.8.5"
 ```
  **Rust Code**
 ```rust
-use rand::Rng; // ✅ Import the `Rng` trait
+use rand::Rng; // Import the `Rng` trait
 
 fn main() {
     let secret_number = rand::thread_rng().gen_range(1..=100);
@@ -3683,16 +3843,16 @@ use std::io;
 ```
 ✔ **Better Using Nested Paths**
 ```rust
-use std::{cmp::Ordering, io}; // ✅ Cleaner and shorter
+use std::{cmp::Ordering, io}; // Cleaner and shorter
 ```
 
 ✔ **You Can Also Use `self` for Subpaths**
 ```rust
-use std::io::{self, Write}; // ✅ Brings `std::io` and `std::io::Write`
+use std::io::{self, Write}; // Brings `std::io` and `std::io::Write`
 ```
 ✔ **Glob Import (`*`)**: Import **everything** from a module  Use carefully!)
 ```rust
-use std::collections::*; // ❌ Can lead to conflicts!
+use std::collections::*; // Can lead to conflicts!
 ```
 
 ---
@@ -3727,10 +3887,10 @@ mod front_of_house {
     }
 }
 
-pub use crate::front_of_house::hosting; // ✅ Re-exporting for easier access
+pub use crate::front_of_house::hosting; // Re-exporting for easier access
 
 pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist(); // ✅ Function call
+    hosting::add_to_waitlist(); // Function call
 }
 ```
 ✔ Everything works, but **all code is in one file**, making it harder to manage.
@@ -3741,9 +3901,9 @@ pub fn eat_at_restaurant() {
 Instead of defining `front_of_house` inside `lib.rs`, we move it into a **separate file**.
  **Modify `src/lib.rs`:**  
 ```rust
-mod front_of_house; // ✅ Declare module (Rust will look for `front_of_house.rs`)
+mod front_of_house; // Declare module (Rust will look for `front_of_house.rs`)
 
-pub use crate::front_of_house::hosting; // ✅ Re-exporting
+pub use crate::front_of_house::hosting; // Re-exporting
 
 pub fn eat_at_restaurant() {
     hosting::add_to_waitlist();
@@ -3765,7 +3925,7 @@ Now, let’s move `hosting` **out of `front_of_house.rs`** into its own file.
 
 ### **Step 2: Modify `src/front_of_house.rs` to Only Declare `hosting`** **New `src/front_of_house.rs`:**  
 ```rust
-pub mod hosting; // ✅ Declare submodule (Rust will look for `front_of_house/hosting.rs`)
+pub mod hosting; // Declare submodule (Rust will look for `front_of_house/hosting.rs`)
 ``` **Create `src/front_of_house/hosting.rs`:**  
 ```rust
 pub fn add_to_waitlist() {
@@ -3816,7 +3976,7 @@ mod front_of_house {
 }
 
 pub fn eat_at_restaurant() {
-    front_of_house::hosting::add_to_waitlist(); // ❌ Must specify full path
+    front_of_house::hosting::add_to_waitlist(); // Must specify full path
 }
 ```
  **Problem:** External code must **navigate the full module structure**.
@@ -3829,10 +3989,10 @@ mod front_of_house {
     }
 }
 
-pub use crate::front_of_house::hosting; // ✅ Re-export
+pub use crate::front_of_house::hosting; // Re-export
 
 pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist(); // ✅ Cleaner!
+    hosting::add_to_waitlist(); // Cleaner!
 }
 ```
 ✔ **Now, external code can call `restaurant::hosting::add_to_waitlist()`** directly.  
@@ -3942,10 +4102,10 @@ If we try to **access an invalid index**, Rust reacts differently based on the m
 ```rust
 let v = vec![1, 2, 3, 4, 5];
 
-// ❌ This will cause a runtime panic!
+// This will cause a runtime panic!
 let does_not_exist = &v[100];
 
-// ✅ This will return `None`, preventing a crash
+// This will return `None`, preventing a crash
 let does_not_exist = v.get(100);
 ```
 - **Using `v[100]` panics the program** if the index is out of range.
@@ -3961,7 +4121,7 @@ Rust **does not allow** modifying a vector while holding an immutable reference.
 let mut v = vec![1, 2, 3, 4, 5];
 let first = &v[0]; // Immutable reference
 
-v.push(6); // ❌ ERROR: Mutable borrow while an immutable reference exists
+v.push(6); // ERROR: Mutable borrow while an immutable reference exists
 
 println!("First element is: {first}"); // This cannot happen
 ``` **Why does this fail?**  
@@ -4163,7 +4323,7 @@ In many programming languages, you can access characters in a string using an in
 ❌ **Rust does not allow indexing into a `String` like this:**
 ```rust
 let s = String::from("hello");
-let h = s[0]; // ❌ ERROR: Strings cannot be indexed
+let h = s[0]; // ERROR: Strings cannot be indexed
 ```
  **Why?**
 1. **Rust stores strings as a sequence of bytes (`Vec<u8>`)**, not individual characters.
@@ -4177,7 +4337,7 @@ let h = s[0]; // ❌ ERROR: Strings cannot be indexed
 Instead of indexing, Rust allows **string slicing**:
 ```rust
 let hello = String::from("Здравствуйте");
-let s = &hello[0..4]; // ✅ Valid slice
+let s = &hello[0..4]; // Valid slice
 println!("{}", s); // Output: "Зд"
 ``` **Warning:**  
 Slicing must **only cut at valid UTF-8 boundaries**. Otherwise, Rust **panics** at runtime.
@@ -4353,7 +4513,7 @@ let field_value = String::from("Blue");
 let mut map = HashMap::new();
 map.insert(field_name, field_value);
 
-// ❌ field_name and field_value are now invalid!
+// field_name and field_value are now invalid!
 // println!("{}", field_name); // ERROR: Ownership moved!
 ```
 ✔ **Ownership of `field_name` and `field_value` transfers to the hash map**.  
@@ -4370,7 +4530,7 @@ let field_value = String::from("Blue");
 let mut map = HashMap::new();
 map.insert(&field_name, &field_value); // Store references
 
-println!("{}", field_name); // ✅ Still valid
+println!("{}", field_name); // Still valid
 ``` **Warning**: The **referenced data must outlive the hash map**!
 
 ---
@@ -4589,7 +4749,7 @@ panic = 'abort'
 ```rust
 fn main() {
     let v = vec![1, 2, 3];
-    let value = v[99]; // ❌ This will panic!
+    let value = v[99]; // This will panic!
 }
 ```
 
@@ -4638,9 +4798,9 @@ stack backtrace:
 
 ---
 
-## ✅ Summary: When to Panic
+## Summary: When to Panic
 
-| **Use `panic!` When...** | ✅ |
+| **Use `panic!` When...** | |
 |--------------------------|----|
 | You hit an unrecoverable bug | ✔️ |
 | The program is in a bad state | ✔️ |
@@ -4733,7 +4893,9 @@ fn main() {
 ---
 
 ## Cleaner Handling with Closures
+A closure is an anonymous function you can store in a variable or pass as a parameter. It can capture variables from its surrounding environment, which makes it more flexible than regular functions.
 
+It’s like a function… but it can "remember" stuff from where it was created.
 ```rust
 use std::fs::File;
 use std::io::ErrorKind;
@@ -4811,7 +4973,7 @@ fn read_username_from_file() -> Result<String, io::Error> {
 
 ---
 
-## ❌ Restrictions of `?`
+## Restrictions of `?`
 
 You can only use `?` in functions that return:
 - `Result<T, E>`
@@ -4820,7 +4982,7 @@ You can only use `?` in functions that return:
 
 ```rust
 fn main() {
-    let f = File::open("hello.txt")?; // ❌ Error!
+    let f = File::open("hello.txt")?; // Error!
 }
 ```
 
@@ -4852,7 +5014,7 @@ fn last_char_of_first_line(text: &str) -> Option<char> {
 
 ---
 
-## ✅ Key Takeaways
+## Key Takeaways
 
 | Concept | Summary |
 |--------|---------|
@@ -4875,8 +5037,8 @@ Rust gives you two main ways to handle errors:
 - `Result<T, E>` → for **recoverable** errors
 
 The general rule:
-> ✅ Use `Result` when the caller might reasonably recover from the error.  
-> ❌ Use `panic!` when continuing is unsafe or incorrect.
+> Use `Result` when the caller might reasonably recover from the error.  
+> Use `panic!` when continuing is unsafe or incorrect.
 
 ---
 
@@ -4896,11 +5058,11 @@ Using `Result` is the more *flexible* and *friendly* choice.
 
 There are a few valid cases for using `panic!`:
 
-#### ✅ 1. **Examples, Prototypes, and Tests**
+#### 1. **Examples, Prototypes, and Tests**
 - `unwrap` and `expect` are fine when writing quick-and-dirty prototypes or examples.
 - In tests, you *want* the program to panic when something goes wrong so the test fails.
 
-#### ✅ 2. **You KNOW the error can’t happen**
+#### 2. **You KNOW the error can’t happen**
 Sometimes you *know* a `Result` will be `Ok`, but the compiler doesn’t.
 In those cases, you can use `expect` and leave a clear reason:
 
@@ -4933,7 +5095,7 @@ You should also:
 
 ---
 
-### ✅ Encode Invariants with Types
+### Encode Invariants with Types
 
 Rust's **type system** can help you avoid bad states entirely!
 
@@ -4962,7 +5124,7 @@ Now, other parts of your program never have to check whether a `Guess` is valid 
 
 ---
 
-## ✅ Final Summary: Chapter 9 – Error Handling
+## Final Summary: Chapter 9 – Error Handling
 
 Rust’s error-handling system is designed to encourage safe, robust, and clear code.
 
@@ -5055,7 +5217,7 @@ fn largest<T: PartialOrd>(list: &[T]) -> &T {
 - `list: &[T]` means the function accepts a **slice** (a reference to an array) of elements of type `T`.
 - It returns a reference to the **largest** item in the list.
 
-✅ This function can now find the largest value in a list of `i32`, `f64`, or any other comparable type — super flexible!
+This function can now find the largest value in a list of `i32`, `f64`, or any other comparable type — super flexible!
 
 ---
 
@@ -5086,7 +5248,7 @@ This version allows `x` and `y` to have **different types**. You could have:
 let point = Point { x: 5, y: 4.0 }; // T = i32, U = f64
 ```
 
-✅ This makes your struct flexible and reusable.
+This makes your struct flexible and reusable.
 
 ---
 
@@ -5170,7 +5332,7 @@ This method:
 - Takes another `Point<X2, Y2>`.
 - Returns a new `Point<X1, Y2>`, combining `self.x` and `other.y`.
 
-✅ This gives you a ton of flexibility to **combine different data types in creative ways**.
+This gives you a ton of flexibility to **combine different data types in creative ways**.
 
 ---
 
@@ -5244,10 +5406,10 @@ Here, any type that implements `Summary` must define a `summarize` method that r
 
 ## Why Use Traits?
 
-- ✅ **Abstract shared behavior**
-- ✅ **Write generic, reusable code**
-- ✅ **Avoid duplication**
-- ✅ **Enforce behavior at compile time**
+- **Abstract shared behavior**
+- **Write generic, reusable code**
+- **Avoid duplication**
+- **Enforce behavior at compile time**
 
 For example, imagine two different data types: a `Tweet` and a `NewsArticle`. Both are different, but both can be summarized. You could write separate functions for each, but it’s better to define a shared trait that both types implement.
 
@@ -5425,7 +5587,7 @@ let s = 3.to_string();
 
 ---
 
-## ✅ Summary
+## Summary
 
 | Concept | What it Means |
 |--------|----------------|
@@ -5481,7 +5643,7 @@ The problem? `x` goes out of scope before `r` is used. The compiler prevents thi
 
 ---
 
-## ✅ Valid Example
+## Valid Example
 
 ```rust
 fn main() {
@@ -5521,7 +5683,7 @@ fn longest(x: &str, y: &str) -> &str {
 
 ❌ This will **not compile** because Rust doesn’t know how long the returned reference is valid.
 
-### ✅ Fixing it with Lifetimes
+### Fixing it with Lifetimes
 
 ```rust
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
@@ -5553,9 +5715,9 @@ fn main() {
     println!("The longest string is {}", result);
 }
 ```
-✅ This works fine because both references live long enough.
+This works fine because both references live long enough.
 
-### ❌ Invalid Case
+### Invalid Case
 ```rust
 fn main() {
     let string1 = String::from("long string is long");
@@ -5565,7 +5727,7 @@ fn main() {
         result = longest(string1.as_str(), string2.as_str());
     } // string2 is dropped here
 
-    println!("The longest string is {}", result); // ❌ compiler error
+    println!("The longest string is {}", result); // compiler error
 }
 ```
 
@@ -5605,7 +5767,7 @@ fn longest<'a>(x: &'a str, y: &str) -> &'a str {
 ```
 Here, the returned reference has the same lifetime as `x`. `y`'s lifetime doesn’t matter because it’s not part of the return.
 
-### ❌ Invalid Lifetime Example
+### Invalid Lifetime Example
 ```rust
 fn longest<'a>(x: &str, y: &str) -> &'a str {
     let result = String::from("really long string");
@@ -5614,7 +5776,7 @@ fn longest<'a>(x: &str, y: &str) -> &'a str {
 ```
 You're returning a reference to a local variable—this would cause a dangling reference. Rust won’t allow that.
 
-✅ **Fix**: Return an owned type (`String`) instead of a reference.
+**Fix**: Return an owned type (`String`) instead of a reference.
 
 ---
 
@@ -5662,7 +5824,7 @@ fn first_word(s: &str) -> &str { // Lifetimes are elided
 ## Lifetime Elision in Practice
 ### Example That Needs Annotations:
 ```rust
-fn longest(x: &str, y: &str) -> &str // ❌ Doesn’t compile
+fn longest(x: &str, y: &str) -> &str // Doesn’t compile
 ```
 Add lifetimes:
 ```rust
@@ -5729,7 +5891,7 @@ where
 
 ---
 
-## ✅ Summary
+## Summary
 - **Lifetimes** ensure references remain valid.
 - Use **lifetime annotations** to describe how references relate.
 - Rust’s **borrow checker** ensures safety at compile time.
@@ -6315,4 +6477,300 @@ This allows:
 - Share test setup code using `tests/common/mod.rs`
 
 
+
+# Closures in Rust: Explained Simply
+
+Rust closures are a powerful way to write concise, flexible code. Let's break them down step by step so they're easy to understand.
+
+---
+
+## What Are Closures?
+Closures are **anonymous functions** you can:
+- Store in a variable.
+- Pass as arguments to other functions.
+- Define inline and use elsewhere.
+
+Closures can **capture variables from the scope** in which they're defined — something normal functions can't do.
+
+---
+
+## Real-World Example: T-Shirt Giveaway
+Imagine a company giving away t-shirts. If a user picked a favorite color, they get that. If not, they get the color that's most in stock. Here's the logic:
+
+```rust
+#[derive(Debug, PartialEq, Copy, Clone)]
+enum ShirtColor {
+    Red,
+    Blue,
+}
+
+struct Inventory {
+    shirts: Vec<ShirtColor>,
+}
+
+impl Inventory {
+    fn giveaway(&self, user_preference: Option<ShirtColor>) -> ShirtColor {
+        user_preference.unwrap_or_else(|| self.most_stocked())
+    }
+
+    fn most_stocked(&self) -> ShirtColor {
+        let mut num_red = 0;
+        let mut num_blue = 0;
+
+        for color in &self.shirts {
+            match color {
+                ShirtColor::Red => num_red += 1,
+                ShirtColor::Blue => num_blue += 1,
+            }
+        }
+
+        if num_red > num_blue {
+            ShirtColor::Red
+        } else {
+            ShirtColor::Blue
+        }
+    }
+}
+```
+
+### Key Idea:
+- The `unwrap_or_else` method accepts a **closure**.
+- If the user didn’t choose a shirt color, the closure runs to determine the most-stocked color.
+- `|| self.most_stocked()` is a closure that captures `self` from the environment.
+
+---
+
+## Syntax and Type Inference
+Closures can be written in many ways:
+
+```rust
+// Function
+fn add_one(x: u32) -> u32 { x + 1 }
+
+// Fully annotated closure
+let add_one = |x: u32| -> u32 { x + 1 };
+
+// Inferred types
+let add_one = |x| x + 1;
+```
+
+Closures are flexible because Rust often infers parameter and return types.
+
+---
+
+## Closures Capture Environment Variables
+Closures can automatically access variables outside their body.
+
+### 1. Immutable Reference:
+```rust
+let list = vec![1, 2, 3];
+let print_list = || println!("{:?}", list);
+print_list();
+```
+The closure uses `list` immutably — so it can be reused and doesn’t restrict access.
+
+### 2. Mutable Reference:
+```rust
+let mut list = vec![1, 2, 3];
+let mut modify_list = || list.push(4);
+modify_list();
+```
+The closure mutates the `list`, so it captures it mutably.
+
+### 3. Taking Ownership:
+```rust
+let list = vec![1, 2, 3];
+let handle = thread::spawn(move || println!("{:?}", list));
+handle.join().unwrap();
+```
+Using `move`, the closure takes **ownership** of `list`, necessary when working across threads.
+
+---
+
+## The Fn Traits
+Closures in Rust automatically implement one or more of the following traits:
+
+| Trait     | Description |
+|-----------|-------------|
+| `FnOnce`  | Closure can be called **once**. It **moves** values out. |
+| `FnMut`   | Closure can be called multiple times and **mutates** values. |
+| `Fn`      | Closure can be called multiple times and only uses **immutable references**. |
+
+### Example: `unwrap_or_else`
+```rust
+impl<T> Option<T> {
+    pub fn unwrap_or_else<F>(self, f: F) -> T
+    where
+        F: FnOnce() -> T,
+    {
+        match self {
+            Some(x) => x,
+            None => f(),
+        }
+    }
+}
+```
+`unwrap_or_else` uses `FnOnce` because it might only call the closure once.
+
+### Example: `sort_by_key`
+```rust
+list.sort_by_key(|r| r.width);
+```
+The closure is used multiple times, so `sort_by_key` requires `FnMut`.
+
+---
+
+## Closures and Type Restrictions
+Once a closure is called with a specific type, Rust locks in that type:
+
+```rust
+let example = |x| x;
+example(String::from("hi"));
+example(5); // ERROR: types don’t match
+```
+
+---
+
+## Summary
+Closures are:
+- Flexible anonymous functions.
+- Can borrow, mutate, or own captured variables.
+- Useful for callbacks, event handlers, and functional patterns.
+- Differ from functions because they capture their **environment**.
+
+# Iterators in Rust: Processing a Series of Items
+
+## What Are Iterators?
+
+Iterators in Rust are a powerful tool that lets you process a sequence of items one at a time. They're designed to abstract the logic of traversing items and are *lazy*, meaning they do nothing until you ask them to. Instead of writing repetitive loop logic, you can write clean, expressive code that works on collections.
+
+---
+
+## Creating an Iterator
+
+```rust
+let v1 = vec![1, 2, 3];
+let v1_iter = v1.iter();
+```
+
+- `v1.iter()` creates an iterator over references to the items in `v1`.
+- At this point, the iterator does nothing. It needs to be *used* (consumed) to have any effect.
+
+---
+
+## Using Iterators
+
+The `for` loop automatically consumes the iterator:
+
+```rust
+for val in v1_iter {
+    println!("Got: {val}");
+}
+```
+
+This behaves like a traditional loop, but all iteration logic is handled by the iterator.
+
+---
+
+## The Iterator Trait
+
+All iterators implement the `Iterator` trait, which requires:
+
+```rust
+pub trait Iterator {
+    type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+- `type Item`: the type of item being iterated over
+- `next`: returns `Some(item)` or `None` when the sequence ends
+
+### Example:
+
+```rust
+let mut v1_iter = vec![1, 2, 3].iter();
+assert_eq!(v1_iter.next(), Some(&1));
+assert_eq!(v1_iter.next(), Some(&2));
+assert_eq!(v1_iter.next(), Some(&3));
+assert_eq!(v1_iter.next(), None);
+```
+
+> Note: Iterators are stateful, so they must be mutable to call `next()`.
+
+---
+
+## Consuming Adaptors
+
+Some methods consume the iterator and return a final result:
+
+```rust
+let total: i32 = vec![1, 2, 3].iter().sum();
+```
+
+- `sum()` consumes the iterator and returns the sum of all elements.
+- Once consumed, the iterator can’t be used again.
+
+---
+
+## Iterator Adapters (Non-Consuming)
+
+Adapter methods transform an iterator into another. They're lazy and must be *consumed* with a method like `collect()`.
+
+### Example: `map`
+
+```rust
+let v1 = vec![1, 2, 3];
+let v2: Vec<_> = v1.iter().map(|x| x + 1).collect();
+assert_eq!(v2, vec![2, 3, 4]);
+```
+
+> `map` applies the closure to each item.
+> `collect` consumes the iterator and returns a new collection.
+
+---
+
+## Closures in Iterators
+
+Many adapters like `map`, `filter`, etc., take closures.
+
+Closures can **capture values** from their environment:
+
+### Example: `filter` with a captured variable
+
+```rust
+struct Shoe {
+    size: u32,
+    style: String,
+}
+
+fn shoes_in_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+    shoes.into_iter().filter(|s| s.size == shoe_size).collect()
+}
+```
+
+- The closure captures `shoe_size` from its environment.
+- `filter` uses the closure to select only matching items.
+
+---
+
+## Choosing the Right Iterator Type
+
+- `iter()`: yields **immutable references** (`&T`)
+- `iter_mut()`: yields **mutable references** (`&mut T`)
+- `into_iter()`: yields **owned values** (`T`)
+
+Choose based on whether you want to read, modify, or consume the collection.
+
+---
+
+## Iterator Summary
+
+| Concept | Description |
+|--------|-------------|
+| Lazy | Iterator does nothing until consumed |
+| `next()` | Core method to step through items |
+| Consuming adapters | Methods like `sum()`, `collect()` that use up the iterator |
+| Non-consuming adapters | Methods like `map()`, `filter()` that return new iterators |
+| Closures | Passed to adapters to customize behavior |
 
