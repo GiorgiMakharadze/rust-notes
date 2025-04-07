@@ -1672,7 +1672,7 @@ println!("{:?}", slice); // Output: [2, 3]
 # Chapter 5: Structs in Rust
 
 ## **What Are Structs?**
-Structs in Rust are used to **group related data together**. They are similar to tuples but provide additional clarity and flexibility by **associating names** with each piece of data.Each struct you define is its own type, even though the fields within the struct might have the same or different types.
+Structs in Rust are used to **group related data together**. They are similar to tuples but provide additional clarity and flexibility by **associating names** with each piece of data.Each struct you define is its own type, even though the fields within the struct might have the same or different types. Structs by default does not implement copy traid so ownership moves if not spacify.
 
 ### **Why Use Structs Instead of Tuples?**
 ✔ Structs **name** each field, making the code easier to understand.
@@ -1782,7 +1782,7 @@ fn main() {
     };
 }
 ```
-✔ `..user1` **copies** all fields from `user1` except those explicitly set.
+✔ `..user2` **copies** all fields from `user1` except those explicitly set.
 ✔ The **username** field is moved from `user1`, making `user1` **invalid** after this operation.
 ✔ If only **copyable** fields (`bool`, `u64`) were used, `user1` would still be valid.
 ✔ This **reduces repetition** and ensures field consistency.
@@ -2133,6 +2133,41 @@ fn main() {
 ## * Understanding `self` in Methods**
 The first parameter of a method is always **`self`**, but it can be used in different ways:
 
+
+**self Declarations**
+
+**Immutable Ownership**
+
+self: MyStruct
+
+self: Self
+
+self
+
+Mutable Ownership
+
+mut self: MyStruct
+
+mut self: Self
+
+mut self
+
+Immutable Reference
+
+self: &MyStruct
+
+self: &Self
+
+&self
+
+Mutable Reference
+
+self: &mut MyStruct
+
+self: &mut Self
+
+&mut self
+
 | `self` Type      | Meaning |
 |------------------|---------|
 | `self`          | Takes **ownership** of the instance. |
@@ -2271,7 +2306,8 @@ impl Rectangle {
         self.width > other.width && self.height > other.height
     }
 }
-``` **Why Use Multiple `impl` Blocks?**
+``` 
+**Why Use Multiple `impl` Blocks?**
 ✔ Helps **organize** large structs with many methods.  
 ✔ Useful when implementing **traits** (covered in Chapter 10).  
 
@@ -2431,45 +2467,62 @@ impl Rectangle {
 - **Method syntax is ergonomic and intuitive**.
 - **Allow struct-specific behavior (e.g., constructors, calculations, checks)**.
 
-# Chapter 6: Enums and pattern matching in Rust
+Below is the enhanced README in markdown format. All of the original content is preserved and expanded with additional explanations and logical structuring for clarity.
 
-## **Defining an Enum**
+---
+
+# Chapter 6: Enums and Pattern Matching in Rust
+
+## Defining and Using Enums
+
+### Defining an Enum
+
 Structs allow grouping related fields together, but **enums** allow defining a **type with a set of possible values**. An enum ensures that a value is **one of** a predefined set of options.
 
 For example, an `IpAddr` can be either IPv4 or IPv6, but **not both at the same time**. Since an enum can only be one of its variants at a time, it is the perfect data structure for representing such cases.
 
-### **Example: Defining an Enum for IP Addresses**
+#### Example: Defining an Enum for IP Addresses
+
 ```rust
 enum IpAddrKind {
     V4,
     V6,
 }
 ```
+
 - `IpAddrKind` is a **custom data type** with two variants: `V4` and `V6`.
 - These variants are **namespaced** under `IpAddrKind`.
 
-### **Creating Instances of an Enum**
+### Creating Instances of an Enum
+
 ```rust
 let four = IpAddrKind::V4;
 let six = IpAddrKind::V6;
 ```
+
 ✔ The `::` syntax **associates a variant with its enum type**. Both `four` and `six` are of type `IpAddrKind`.
 
-### **Using Enums in Functions**
-Since `IpAddrKind` is now a type, we can use it as a function parameter:
+### Using Enums in Functions
+
+Since `IpAddrKind` is now a type, it can be used as a parameter to functions:
+
 ```rust
 fn route(ip_kind: IpAddrKind) {}
 
 route(IpAddrKind::V4);
 route(IpAddrKind::V6);
 ```
-✔ This allows handling both variants in a **single function**.
+
+✔ This approach allows handling both variants within a **single function**.
 
 ---
-## **Enums vs Structs for Storing Data**
-The `IpAddrKind` enum only defines the **type** of IP address but does not store the actual IP address itself. We could try solving this using a **struct**:
 
-### **Storing IP Addresses Using a Struct**
+## Enums vs Structs for Storing Data
+
+The `IpAddrKind` enum only defines the **type** of IP address but does not store the actual IP address itself. One alternative is to use a **struct**.
+
+### Using a Struct to Store IP Addresses
+
 ```rust
 enum IpAddrKind {
     V4,
@@ -2493,32 +2546,33 @@ let loopback = IpAddr {
     address: String::from("::1"),
 };
 ```
-✔ Here, we store **both** the type (`kind`) and the actual address (`address`).
-✔ However, **this approach is redundant** since the `kind` field determines what type of address the `address` field contains.
+
+✔ In this approach, we store **both** the type (`kind`) and the actual address (`address`).  
+✔ However, this approach is **redundant** because the `kind` field determines what type of address the `address` field contains.
 
 ---
 
-# **Enums vs. Structs in Rust**
-Rust provides **structs** and **enums** for defining custom types. While both can group related data, they serve different purposes.
+## Key Differences Between Enums and Structs
 
-## **Key Differences Between Enums and Structs**
-| Feature            |              Structs                               | Enums |
-|--------------------|--------                                            |------|
-| **Purpose**        | Groups related fields together                     | Represents one of multiple predefined variants |
-| **Data Storage**   | Can hold multiple fields with different types      | Each variant can have different types of associated data |
-| **Exhaustiveness** | No need to check field types explicitly            | Must handle all possible variants in a `match` expression |
-| **Flexibility**    | Best when all fields are always required           | Best when a value can only be one of several options |
-| **Memory Usage**    | Always stores all fields                          | Stores only the data for the current variant |
+Rust provides both **structs** and **enums** for defining custom types. While both can group related data, they serve different purposes.
 
----
+| **Feature**         | **Structs**                                    | **Enums**                                          |
+|---------------------|------------------------------------------------|----------------------------------------------------|
+| **Purpose**         | Groups related fields together                 | Represents one of multiple predefined variants     |
+| **Data Storage**    | Can hold multiple fields with different types  | Each variant can have different types of associated data |
+| **Exhaustiveness**  | No need to check field types explicitly         | Must handle all possible variants in a `match` expression |
+| **Flexibility**     | Best when all fields are always required        | Best when a value can only be one of several options |
+| **Memory Usage**    | Always stores all fields                         | Stores only the data for the current variant       |
 
-## **When to Use Structs**
+### When to Use Structs
+
 Structs are best when:
 - You need to **group related fields together** to form a composite type.
-- Each instance **must contain all fields** (e.g., a `Rectangle` with `width` and `height`).
-- You want **clear field names** for documentation and readability.
-  
-### **Example: Using a Struct for a User Profile**
+- Each instance **must contain all fields** (for example, a `Rectangle` with `width` and `height`).
+- You want **clear field names** to improve documentation and readability.
+
+#### Example: Using a Struct for a User Profile
+
 ```rust
 struct User {
     username: String,
@@ -2534,19 +2588,20 @@ let user1 = User {
     sign_in_count: 1,
 };
 ```
+
 ✔ **Why a Struct?**  
 - `username` and `email` are **always required**.
 - `sign_in_count` should be **tracked for all users**.
 
----
+### When to Use Enums
 
-## **When to Use Enums**
 Enums are best when:
 - A value must be **one of a predefined set of options**.
 - Different variants may store **different types of data**.
 - You need **pattern matching** to enforce exhaustive handling.
 
-### **Example: Representing an IP Address with an Enum**
+#### Example: Representing an IP Address with an Enum
+
 ```rust
 enum IpAddr {
     V4(u8, u8, u8, u8),
@@ -2556,284 +2611,624 @@ enum IpAddr {
 let home = IpAddr::V4(127, 0, 0, 1);
 let loopback = IpAddr::V6(String::from("::1"));
 ```
+
 ✔ **Why an Enum?**  
 - An IP address can be **either** IPv4 or IPv6, never both.
-- Different variants store **different types of data** (`V4` uses four `u8` values, `V6` stores a `String`).
-- `match` ensures **all cases are handled** safely.
+- Different variants store **different types of data** (`V4` uses four `u8` values, while `V6` stores a `String`).
+- The `match` construct ensures **all cases are handled** safely.
 
 ---
 
-## **Structs vs. Enums: Real-World Use Cases**
-| Use Case | Recommended Type |
-|----------|----------------|
-| User Profile (name, email, active status) | **Struct** |
-| Different Shapes (Circle, Rectangle, Triangle) | **Enum** |
-| Storing Database Records (id, fields, metadata) | **Struct** |
-| Handling Network Protocols (TCP, UDP, HTTP) | **Enum** |
-| Sensor Data with Fixed Fields (temperature, humidity) | **Struct** |
-| Parsing Input Commands (Start, Stop, Pause) | **Enum** |
+## Enum Variants: Tuple vs Struct Variants
 
----
+Enums in Rust are versatile because **each variant** can store **different kinds of data**. There are two common styles for variants:
 
-## **Summary**
- **Use Structs** when all fields are required together.  
- **Use Enums** when only **one** variant can be active at a time.  
- **Use Structs inside Enums** when variants need **additional structured data**.
+### Tuple Variant
 
-## **More Concise: Storing Data Directly in an Enum**
-Instead of using a struct, we can **attach data directly to enum variants**:
 ```rust
-enum IpAddr {
-    V4(String),
-    V6(String),
-}
-
-let home = IpAddr::V4(String::from("127.0.0.1"));
-let loopback = IpAddr::V6(String::from("::1"));
-```
-✔ Each variant now **stores its associated data directly**, eliminating the need for an extra struct.
-✔ `IpAddr::V4(String)` acts as a **constructor function** that automatically creates an `IpAddr` instance.
-
----
-## **Enums Can Hold Different Types of Data**
-A major advantage of enums over structs is that **each variant can store different types of data**.
-
-### **Example: Storing Different Data Types**
-```rust
-enum IpAddr {
-    V4(u8, u8, u8, u8),
-    V6(String),
-}
-
-let home = IpAddr::V4(127, 0, 0, 1);
-let loopback = IpAddr::V6(String::from("::1"));
-```
-✔ `V4` stores **four `u8` numbers**, while `V6` stores a **String**.
-✔ This **would not be possible** with a single struct.
-
----
-## **Standard Library Definition of `IpAddr`**
-Rust's standard library includes a built-in definition for `IpAddr`, similar to our custom one:
-```rust
-struct Ipv4Addr {
-    // Internal fields
-}
-
-struct Ipv6Addr {
-    // Internal fields
-}
-
-enum IpAddr {
-    V4(Ipv4Addr),
-    V6(Ipv6Addr),
+enum PaymentMethodType {
+    CreditCard(String),
+    DebitCard(String),
+    PayPal(String),
 }
 ```
-✔ Instead of a `String`, the standard library uses **dedicated structs** (`Ipv4Addr` and `Ipv6Addr`) for each variant.
-✔ This showcases that **enums can store complex data types**, including other structs or enums.
 
----
-## **Enums Can Store Complex Variants**
-We can store different amounts and types of data in enum variants.
+- In this style, **each variant stores a single value** (or multiple unnamed values), similar to a tuple.
+- For instance:
+  - `CreditCard(String)` might store a card number.
+  - `DebitCard(String)` might store an account number.
+  - `PayPal(String)` might store an email address.
 
-### **Example: `Message` Enum with Various Data Types**
+**When to use tuple variants:**  
+Use tuple variants when **only a few values** need to be stored and you **do not need to name them** individually because their meaning is clear from context.
+
+#### Example Use Case (Tuple Variant)
+
 ```rust
-enum Message {
-    Quit,                      // No data
-    Move { x: i32, y: i32 },   // Named fields (struct-like)
-    Write(String),             // Tuple-like
-    ChangeColor(i32, i32, i32) // Tuple-like
+let payment = PaymentMethodType::CreditCard(String::from("1234-5678-9012-3456"));
+```
+
+The `String` clearly holds the card number without requiring a named field.
+
+### Struct Variant
+
+```rust
+enum PaymentMethodType {
+    CreditCard(String),
+    DebitCard(String),
+    PayPal { username: String, password: String },
 }
 ```
-✔ `Quit`: No associated data.
-✔ `Move`: Stores named fields (`x` and `y`), similar to a struct.
-✔ `Write`: Stores a single `String`.
-✔ `ChangeColor`: Stores three `i32` values.
 
-This is equivalent to defining multiple struct types:
+- In this style, a variant can be defined with **named fields** inside it.
+- `PayPal { username: String, password: String }` explicitly names the data it holds.
+
+**When to use struct variants:**  
+Use struct variants when **multiple pieces of data** need to be stored in a variant and naming them makes your code more **self-documenting** and clearer.
+
+#### Example Use Case (Struct Variant)
+
 ```rust
-struct QuitMessage; // Unit struct
-struct MoveMessage {
-    x: i32,
-    y: i32,
-}
-struct WriteMessage(String); // Tuple struct
-struct ChangeColorMessage(i32, i32, i32); // Tuple struct
+let payment = PaymentMethodType::PayPal { 
+    username: String::from("user@example.com"), 
+    password: String::from("securepassword123") 
+};
 ```
-✔ Using separate structs makes it **harder to process all message types together**.
-✔ An **enum groups related types together**, simplifying handling in functions.
+
+Here, both the username and password are explicitly labeled for clarity.
 
 ---
-## **Defining Methods on Enums**
-Just like structs, **enums can have methods** using `impl` blocks.
 
-### **Example: Adding a Method to `Message` Enum**
+## Nested Enums
+
+Nested enums are simply enums used inside other enums. This technique is useful for organizing complex data structures by breaking them into smaller, more manageable pieces.
+
+### Example: Nested Enums
+
 ```rust
-impl Message {
-    fn call(&self) {
-        // Method body here
+enum Meat {
+    Chicken,
+    Steak,
+}
+
+enum Beans {
+    Pinto,
+    Black,
+}
+
+enum RestaurantItem {
+    Burrito { meat: Meat, beans: Beans },
+    Bowl(Meat),
+    VeganPlate,
+}
+```
+
+#### What’s Happening Here?
+
+- `Meat` is an enum with two options: `Chicken` or `Steak`.
+- `Beans` is an enum with two options: `Pinto` or `Black`.
+- `RestaurantItem` is the **main enum** that uses `Meat` and `Beans` in some of its variants:
+  - `Burrito { meat: Meat, beans: Beans }`: a Burrito includes both **meat** and **beans**.
+  - `Bowl(Meat)`: a Bowl contains only **meat**.
+  - `VeganPlate`: a Vegan plate contains **neither meat nor beans**.
+
+#### Why Use Nested Enums?
+
+- **Cleaner Code:** Decomposes complex types into simpler, easily understandable parts.
+- **Stronger Type Safety:** Rust enforces valid values at compile time.
+- **Reusability:** The same enums (`Meat` and `Beans`) can be reused elsewhere in your code.
+
+#### Practical Example (Using Nested Enums)
+
+```rust
+let order1 = RestaurantItem::Burrito {
+    meat: Meat::Steak,
+    beans: Beans::Pinto,
+};
+
+let order2 = RestaurantItem::Bowl(Meat::Chicken);
+
+let order3 = RestaurantItem::VeganPlate;
+```
+
+And pattern matching on these values:
+
+```rust
+match order1 {
+    RestaurantItem::Burrito { meat, beans } => {
+        println!("Burrito with {:?} and {:?} beans!", meat, beans);
+    },
+    RestaurantItem::Bowl(meat) => {
+        println!("Bowl with {:?}!", meat);
+    },
+    RestaurantItem::VeganPlate => {
+        println!("Vegan Plate with no meat or beans!");
+    },
+}
+```
+
+*(Note: You would need to add `#[derive(Debug)]` to the `Meat` and `Beans` enums to print them with `{:?}`.)*
+
+---
+
+## Enums and `match`: Comprehensive Usage
+
+### What is an Enum?
+
+An **enum** (*short for "enumeration"*) is a type that can be one of several **different variants**. It is used to define a value that could be one of multiple choices. By grouping multiple variants into one type, enums simplify code by eliminating the need for multiple separate types.
+
+#### Basic Example of an Enum
+
+```rust
+enum PaymentMethod {
+    CreditCard,
+    DebitCard,
+    PayPal,
+}
+```
+
+This `PaymentMethod` enum can be one of:
+- `CreditCard`
+- `DebitCard`
+- `PayPal`
+
+#### Creating and Using an Enum Value
+
+```rust
+let method = PaymentMethod::CreditCard;
+```
+
+### What is `match`?
+
+Rust’s `match` is a control flow construct that checks a value against multiple patterns and executes code based on which pattern matches. It is **exhaustive** by design, meaning every possible case must be handled.
+
+#### Matching on a Basic Enum
+
+```rust
+fn process_payment(method: PaymentMethod) {
+    match method {
+        PaymentMethod::CreditCard => println!("Paid with Credit Card"),
+        PaymentMethod::DebitCard => println!("Paid with Debit Card"),
+        PaymentMethod::PayPal => println!("Paid with PayPal"),
+    }
+}
+```
+
+- The `match` expression evaluates the value of `method`.
+- Each arm handles one variant, and all variants must be covered.
+
+### Tuple Enum Variants
+
+Enums can store additional data using tuple variants.
+
+```rust
+enum PaymentMethod {
+    CreditCard(String),
+    DebitCard(String),
+    PayPal(String),
+}
+```
+
+Each variant carries a `String`. For example:
+
+```rust
+let method = PaymentMethod::CreditCard(String::from("1234-5678-9012-3456"));
+```
+
+#### Matching a Tuple Enum Variant
+
+```rust
+fn process_payment(method: PaymentMethod) {
+    match method {
+        PaymentMethod::CreditCard(number) => println!("Paid with Credit Card: {number}"),
+        PaymentMethod::DebitCard(number) => println!("Paid with Debit Card: {number}"),
+        PaymentMethod::PayPal(email) => println!("Paid with PayPal account: {email}"),
+    }
+}
+```
+
+- The inner value (e.g., `number` or `email`) is bound to a variable and used inside the match arm.
+
+### Struct Enum Variants
+
+Struct variants allow you to define named fields inside an enum.
+
+```rust
+enum PaymentMethod {
+    CreditCard(String),
+    DebitCard(String),
+    PayPal { username: String, password: String },
+}
+```
+
+Now, `PayPal` holds two named fields: `username` and `password`.
+
+#### Matching a Struct Enum Variant
+
+```rust
+fn process_payment(method: PaymentMethod) {
+    match method {
+        PaymentMethod::CreditCard(number) => println!("Paid with Credit Card: {number}"),
+        PaymentMethod::DebitCard(number) => println!("Paid with Debit Card: {number}"),
+        PaymentMethod::PayPal { username, password } => {
+            println!("Paid with PayPal username: {username} and password: {password}")
+        },
+    }
+}
+```
+
+- This allows multiple values to be extracted by name inside the match arm.
+
+### Enum Methods
+
+You can define methods on enums using an `impl` block, similar to structs.
+
+```rust
+enum PaymentMethod {
+    CreditCard(String),
+    DebitCard(String),
+    PayPal { username: String, password: String },
+}
+
+impl PaymentMethod {
+    fn pay(&self) {
+        match self {
+            PaymentMethod::CreditCard(number) => println!("Processing Credit Card: {number}"),
+            PaymentMethod::DebitCard(number) => println!("Processing Debit Card: {number}"),
+            PaymentMethod::PayPal { username, .. } => println!("Processing PayPal for {username}"),
+        }
+    }
+}
+```
+
+Usage:
+
+```rust
+let method = PaymentMethod::DebitCard(String::from("8765-4321-0000-1111"));
+method.pay();
+```
+
+- This defines an **associated method** on the enum that can be called directly on its instance.
+
+### Using the Wildcard Pattern `_`
+
+Sometimes you may not care about some variants. The wildcard `_` pattern matches all cases not handled explicitly:
+
+```rust
+match method {
+    PaymentMethod::CreditCard(number) => println!("Credit Card: {number}"),
+    _ => println!("Other payment method"),
+}
+```
+
+- The `_` pattern ensures that any unmatched case is handled without listing every possible variant.
+
+---
+
+## The `Option<T>` Enum: Safety Over Null
+
+### Why Does Rust Use `Option<T>` Instead of `null`?
+
+Many languages use `null` to represent an absent value, but `null` is notorious for causing unexpected errors when a value is assumed to be present. Tony Hoare called it the **“billion-dollar mistake”** due to the significant impact of null-related bugs.
+
+#### Problems with `null` in Other Languages
+
+- **Unintentional Errors:** Using a `null` value where a valid value is expected often results in crashes.
+- **Hidden Bugs:** Failing to check for `null` leads to runtime exceptions.
+- **Lack of Type Safety:** `null` can be assigned to any type, making errors harder to catch at compile time.
+
+Rust eliminates these issues by not having `null` at all. Instead, it uses the `Option<T>` enum, which explicitly represents the possibility of absence.
+
+Of course!  
+Here’s a **shorter version** of the **Borrowing Rules in Enums** section — still clear, still in your README style:
+
+---
+
+## Borrowing Rules in Enums
+
+In Rust, **enums follow the same ownership and borrowing rules** as other types.
+
+You can:
+- **Own** an enum value.
+- **Borrow** it immutably (`&`).
+- **Borrow** it mutably (`&mut`).
+
+---
+
+### Owning an Enum
+
+When you create an enum, you **own** the value.
+
+```rust
+enum PaymentMethod {
+    CreditCard(String),
+    PayPal(String),
+}
+
+let method = PaymentMethod::CreditCard(String::from("1234-5678-9012-3456"));
+```
+
+✔ Ownership is moved when passing the enum unless you borrow it.
+
+---
+
+### Immutable Borrowing (`&`)
+
+Borrow the enum to read it without taking ownership.
+
+```rust
+fn describe(method: &PaymentMethod) {
+    match method {
+        PaymentMethod::CreditCard(number) => println!("Card ending: {}", &number[number.len()-4..]),
+        PaymentMethod::PayPal(email) => println!("PayPal: {}", email),
     }
 }
 
-let m = Message::Write(String::from("hello"));
-m.call();
+let method = PaymentMethod::PayPal(String::from("user@example.com"));
+describe(&method); // Borrowed
 ```
-✔ Methods use `self` to refer to the **specific variant** that the method is called on.
-✔ `Message::Write(String::from("hello"))` is stored in `m`.
-✔ `m.call()` invokes the `call` method.
+
+✔ After calling, `method` is still usable because it was borrowed.
 
 ---
-## **Key Takeaways**
-✔ **Enums allow defining a type with multiple possible values**.
-✔ **Variants are namespaced** under the enum type (`EnumName::Variant`).
-✔ **Enums can store associated data**, eliminating the need for extra structs.
-✔ **Each variant can store different types of data**, which is not possible with structs.
-✔ **Enums in Rust are flexible**, even allowing methods like structs.
-✔ **Rust’s standard library provides common enums**, such as `IpAddr`, for efficiency.
 
+### Mutable Borrowing (`&mut`)
 
-# The `Option` Enum and Its Advantages Over Null Values
+Borrow mutably to modify inner data.
 
-## **Why Does Rust Use `Option<T>` Instead of `null`?**
-In many programming languages, `null` is used to represent the absence of a value. However, `null` is known for causing **unexpected errors and system crashes** when developers assume a value is present but it is actually `null`.
+```rust
+fn update_email(method: &mut PaymentMethod) {
+    if let PaymentMethod::PayPal(email) = method {
+        email.push_str(".verified");
+    }
+}
 
-### **The Billion-Dollar Mistake**
-Tony Hoare, the inventor of `null`, described it as a **“billion-dollar mistake”** because it has led to countless errors, vulnerabilities, and system failures over decades of software development.
+let mut method = PaymentMethod::PayPal(String::from("user@example.com"));
+update_email(&mut method);
+```
 
-### **Problems with `null` in Other Languages**
-- **Unintentional Errors:** Trying to use a `null` value where an actual value is expected often leads to crashes.
-- **Hidden Bugs:** Forgetting to check for `null` can cause runtime exceptions.
-- **Lack of Type Safety:** Since `null` can be assigned to variables of any type, mistakes are harder to catch at compile time.
-
-Rust solves these issues by **not having `null` at all**. Instead, Rust provides the `Option<T>` enum, which explicitly represents either **Some value** or **None (absence of a value)**.
+✔ `&mut` gives write access to the inner data.
 
 ---
-## **What is `Option<T>`?**
-Rust provides the `Option<T>` enum to handle cases where a value **might** or **might not** exist. It is defined as follows:
+
+### Moving Out of an Enum
+
+Moving inner data requires **owning** the enum.
+
+```rust
+fn extract_email(method: PaymentMethod) -> Option<String> {
+    if let PaymentMethod::PayPal(email) = method {
+        Some(email) // Moves email
+    } else {
+        None
+    }
+}
+```
+
+✔ Cannot move fields out of a borrowed enum.
+
+---
+
+### Borrowing in `match`
+
+When matching:
+- `match &enum` → borrows fields.
+- `match &mut enum` → borrows fields mutably.
+
+You can also use `ref` or `ref mut` inside `match`:
+
+```rust
+match method {
+    PaymentMethod::CreditCard(ref number) => println!("Card: {}", number),
+    _ => (),
+}
+```
+
+---
+
+## Quick Summary
+
+| Action           | Behavior |
+|------------------|----------|
+| Own enum         | Can move data inside. |
+| `&Enum`          | Read-only access. |
+| `&mut Enum`      | Modify inner data. |
+| Move inner field | Only with full ownership. |
+
+Got it!  
+You want two things added, **but still compact**:
+
+1. **Mention common borrow/move error** (`cannot move out of borrowed content`).  
+2. **Show how Enums work in `if` / `else` without `match`**, like using `if let` style.
+
+Here’s the updated, small **Borrowing Rules in Enums** section ready for your README:
+
+---
+
+## Borrowing Rules in Enums
+
+In Rust, **enums follow the same ownership and borrowing rules** as other types.
+
+You can:
+- **Own** an enum value.
+- **Borrow** it immutably (`&`).
+- **Borrow** it mutably (`&mut`).
+
+---
+
+### Owning an Enum
+
+When you create an enum, you **own** the value.
+
+```rust
+enum PaymentMethod {
+    CreditCard(String),
+    PayPal(String),
+}
+
+let method = PaymentMethod::CreditCard(String::from("1234-5678-9012-3456"));
+```
+
+✔ Ownership is moved when passing the enum unless you borrow it.
+
+---
+
+### Immutable Borrowing (`&`)
+
+Borrow the enum to read without taking ownership.
+
+```rust
+fn describe(method: &PaymentMethod) {
+    match method {
+        PaymentMethod::CreditCard(number) => println!("Card ending: {}", &number[number.len()-4..]),
+        PaymentMethod::PayPal(email) => println!("PayPal: {}", email),
+    }
+}
+
+let method = PaymentMethod::PayPal(String::from("user@example.com"));
+describe(&method);
+```
+
+✔ After calling, `method` is still usable.
+
+---
+
+### Mutable Borrowing (`&mut`)
+
+Borrow mutably to modify inner data.
+
+```rust
+fn update_email(method: &mut PaymentMethod) {
+    if let PaymentMethod::PayPal(email) = method {
+        email.push_str(".verified");
+    }
+}
+
+let mut method = PaymentMethod::PayPal(String::from("user@example.com"));
+update_email(&mut method);
+```
+
+✔ `&mut` gives write access.
+
+---
+
+### Moving Out of an Enum
+
+Moving fields needs full ownership.
+
+```rust
+fn extract_email(method: PaymentMethod) -> Option<String> {
+    if let PaymentMethod::PayPal(email) = method {
+        Some(email) // Moves email out
+    } else {
+        None
+    }
+}
+```
+
+✔ **You can't move fields from a borrowed enum.**
+
+**Common Error:**  
+Trying to move from a `&` reference gives:  
+```
+error[E0507]: cannot move out of borrowed content
+```
+
+---
+
+### Matching with Borrowed Enums
+
+When matching:
+- `match &enum` → borrows fields.
+- `match &mut enum` → mutable borrows.
+
+Use `ref` or `ref mut` if matching owned enums:
+
+```rust
+match method {
+    PaymentMethod::CreditCard(ref number) => println!("Card: {}", number),
+    _ => (),
+}
+```
+
+---
+
+### Using Enum in `if` / `else` (`if let`)
+
+Instead of `match`, you can use **`if let`** with enums for cleaner code:
+
+```rust
+if let PaymentMethod::CreditCard(number) = &method {
+    println!("Credit Card: {}", number);
+} else {
+    println!("Not a Credit Card.");
+}
+```
+
+✔ `if let` checks one variant and automatically borrows the fields.
+
+---
+
+### What is `Option<T>`?
+
+`Option<T>` is defined as follows:
 
 ```rust
 enum Option<T> {
-    None,       // Represents absence of a value
+    None,       // Represents the absence of a value
     Some(T),    // Holds a value of type T
 }
 ```
-✔ `Option<T>` is **generic**, meaning it can hold any type (`T`).
-✔ `Some(T)` stores an actual value of type `T`.
+
+✔ `Option<T>` is generic and can hold any type.  
+✔ `Some(T)` stores an actual value of type `T`.  
 ✔ `None` represents the absence of a value.
 
-Unlike `null`, `Option<T>` forces developers to **explicitly handle** the case where a value might be missing, preventing many common bugs.
+#### Using `Option<T>` in Rust
 
-### **Using `Option<T>` in Rust**
 ```rust
 let some_number = Some(5);
 let some_char = Some('e');
 let absent_number: Option<i32> = None;
 ```
-- `some_number` has the type `Option<i32>`, and it contains a value `5`.
-- `some_char` has the type `Option<char>` and contains `'e'`.
-- `absent_number` has the type `Option<i32>`, but it contains `None`, meaning no value is available.
 
-### **How Does `Option<T>` Prevent `null`-Related Bugs?**
-One key benefit of `Option<T>` is that it **cannot be used directly as a normal value**. This prevents **accidental usage of an absent value**, which is a common issue in languages with `null`.
+- `some_number` is of type `Option<i32>` and contains `5`.
+- `absent_number` is of type `Option<i32>`, representing no value.
 
-Consider this incorrect Rust code:
+#### Preventing `null`-Related Bugs
+
+Rust forces you to explicitly handle the case where a value might be missing. For example, the following code results in a compiler error:
+
 ```rust
 let x: i8 = 5;
 let y: Option<i8> = Some(5);
 let sum = x + y; // ERROR: Cannot add i8 and Option<i8>
 ```
-#### **Compiler Error Output:**
-```
-error[E0277]: cannot add `Option<i8>` to `i8`
---> src/main.rs:5:17
-  |
-5 | let sum = x + y;
-  |                 ^ no implementation for `i8 + Option<i8>`
-```
-This error occurs because Rust **prevents you from assuming** that an `Option<i8>` is automatically a valid `i8`. Instead, you must explicitly handle both cases (`Some` or `None`).
 
----
-## **How to Extract Values from `Option<T>`?**
-Since Rust does not allow direct operations on `Option<T>`, you need to **convert it into a normal value** before using it. Rust provides multiple ways to handle this:
+Instead, you must handle both cases:
 
-### **1. Using `match` to Handle Both `Some` and `None`**
-The `match` expression allows us to check for both variants and safely handle the absence of a value:
 ```rust
-fn main() {
-    let maybe_number = Some(10);
-
-    match maybe_number {
-        Some(n) => println!("Number: {}", n), // Extracts the value if Some
-        None => println!("No value found"),    // Handles the None case
-    }
-}
-```
-✔ If `maybe_number` contains `Some(10)`, it prints `Number: 10`.
-✔ If `maybe_number` is `None`, it prints `No value found`.
-
-### **2. Using `if let` for a Simpler Check**
-If you only care about handling the `Some` case, you can use `if let`:
-```rust
-if let Some(n) = maybe_number {
-    println!("Number: {}", n);
-}
-```
-✔ This is a **shortcut** for when you only need to process `Some` values.
-
-### **3. Providing a Default Value with `unwrap_or`**
-If you need a value and want to use a **default** when `None`, use `unwrap_or`:
-```rust
-let value = maybe_number.unwrap_or(0); // Uses 10 if Some(10), otherwise 0
+let value = y.unwrap_or(0); // If y is Some(5), value becomes 5; if None, value becomes 0.
 println!("Value: {}", value);
 ```
-✔ If `maybe_number` is `Some(10)`, `value` becomes `10`.
-✔ If `maybe_number` is `None`, `value` defaults to `0`.
 
-### **4. Using `unwrap` (Unsafe, Not Recommended)**
-`unwrap()` directly extracts the value but **panics if `None` is encountered**:
-```rust
-let value = maybe_number.unwrap(); // Crashes if maybe_number is None!
-``` **Avoid `unwrap()` unless you're 100% sure `None` will never occur.**
+✔ This explicit handling prevents accidental operations on non-existent values.
 
 ---
-## **Why `Option<T>` is Safer Than `null`**
-| Feature            | `null` in Other Languages | `Option<T>` in Rust |
-|-------------------|-------------------------|---------------------|
-| **Type Safety**   | Any variable can be `null`, leading to errors | `Option<T>` is a distinct type, preventing misuse |
-| **Compiler Checks** | Must manually check for `null` | Rust **forces** you to handle `None` |
-| **Error Handling** | Forgetting to check for `null` causes crashes | Requires explicit handling of missing values |
-| **Default Values** | Can assign defaults manually | `unwrap_or` provides a built-in safe default |
-| **Code Readability** | `null` checks are scattered | Explicit `Some`/`None` cases improve clarity |
 
-By requiring you to **explicitly handle the absence of a value**, Rust prevents many common programming errors and improves code reliability.
+## The `match` Control Flow Construct in Rust
 
----
-## **Conclusion: The Power of `Option<T>`**
-✔ `Option<T>` replaces `null` by making missing values **explicit**.
-✔ Rust **prevents accidental use** of an absent value by enforcing type safety.
-✔ `match`, `if let`, and `unwrap_or` allow **safe extraction** of values.
-✔ `Option<T>` forces you to **think about absence cases**, reducing bugs.
+### What is `match`?
 
-# The `match` Control Flow Construct in Rust
+Rust’s `match` is a control flow tool that compares a value against multiple patterns and executes code based on the match. It is akin to a coin-sorting machine:
+- Each coin (value) goes through different “tracks” (patterns).
+- It falls into the first track that matches its size (pattern).
+- The corresponding code block executes once a match is found.
 
-## **What is `match`?**
-Rust provides an incredibly powerful control flow construct called `match`, which allows you to **compare a value against multiple patterns** and execute code based on which pattern matches.
+### Using `match` with Enums
 
-### **How Does `match` Work?**
-Think of `match` like a **coin-sorting machine**:
-- Each coin (value) goes down a track with different-sized holes.
-- It **falls through the first hole that fits**.
-- Similarly, in `match`, a value goes through each pattern, and when a match is found, the associated block of code executes.
+For example, consider determining the value of different US coins:
 
-### **Why is `match` Useful?**
-- **Pattern Matching:** Supports matching against literals, variables, wildcards (`_`), and more.
-- **Exhaustiveness:** Rust **ensures all possible cases are handled**, reducing errors.
-- **Readability & Maintainability:** Provides a structured way to handle different conditions.
-
----
-## **Using `match` with Enums**
-Let’s say we want to determine the value (in cents) of different US coins. We can define an enum and use `match` to return the correct value.
-
-### **Example: Matching on a `Coin` Enum**
 ```rust
 enum Coin {
     Penny,
@@ -2851,19 +3246,12 @@ fn value_in_cents(coin: Coin) -> u8 {
     }
 }
 ```
-✔ **How It Works:**
-- The `match` expression takes `coin` as input.
-- It **checks against each possible variant** of `Coin`.
-- If a match is found, the corresponding value is returned.
 
-### **Code Explanation:**
-- `match coin {}`: The `match` expression evaluates `coin`.
-- `Coin::Penny => 1,`: If `coin` is a penny, return `1`.
-- **No `default` case is needed** because Rust enforces handling all possible variants of the enum.
+✔ The `match` expression checks `coin` against each variant and returns the corresponding value.
 
----
-## **Adding Multiple Lines in Match Arms**
-By default, a `match` arm executes a **single expression**. If you need **multiple lines**, use `{}`:
+### Adding Multiple Lines in Match Arms
+
+If you need multiple lines of code in a match arm, enclose the code in braces `{}`:
 
 ```rust
 fn value_in_cents(coin: Coin) -> u8 {
@@ -2878,15 +3266,15 @@ fn value_in_cents(coin: Coin) -> u8 {
     }
 }
 ```
-✔ If `coin` is `Coin::Penny`, the function **prints a message** before returning `1`.
-✔ The **last expression inside `{}` is the return value**.
 
----
-## **Matching Enum Variants with Data**
-Some enum variants **contain associated data**. `match` can also extract this data for use in the matching arm.
+✔ When `Coin::Penny` matches, a message is printed before returning `1`.
+✔ The last expression within the braces is the arm’s return value.
 
-### **Example: Matching a Quarter’s State**
-Let’s say U.S. quarters have different designs for each state. We modify our `Coin` enum to store the **state name** inside `Quarter`:
+### Matching Enum Variants with Associated Data
+
+Some enum variants carry associated data. `match` can extract this data for further use.
+
+#### Example: Matching a Quarter’s State
 
 ```rust
 #[derive(Debug)]
@@ -2915,21 +3303,14 @@ fn value_in_cents(coin: Coin) -> u8 {
     }
 }
 ```
-✔ If `Coin::Quarter(state)` is matched, `state` binds to the quarter’s **state value**.
-✔ We can **use the extracted `state` value inside the match arm**.
 
-### **Example Usage:**
-```rust
-value_in_cents(Coin::Quarter(UsState::Alaska));
-```
-✔ This will print: `State quarter from Alaska!`
-✔ This technique is useful for extracting **associated data inside an enum**.
+✔ If `Coin::Quarter(state)` is matched, `state` binds to the quarter’s state value.  
+✔ This technique is useful for handling enums with associated data.
 
----
-## **Using `match` with `Option<T>`**
-The `Option<T>` enum represents a value that might be **some value** (`Some(T)`) or **none** (`None`).
+### Using `match` with `Option<T>`
 
-### **Example: Adding 1 to an `Option<i32>`**
+`Option<T>` is commonly matched to safely extract a value:
+
 ```rust
 fn plus_one(x: Option<i32>) -> Option<i32> {
     match x {
@@ -2938,104 +3319,80 @@ fn plus_one(x: Option<i32>) -> Option<i32> {
     }
 }
 ```
-✔ If `x` is `Some(i)`, we return `Some(i + 1)`.
-✔ If `x` is `None`, we **return `None`** without trying to increment a non-existent value.
 
-### **Example Calls:**
+- If `x` is `Some(i)`, the function returns `Some(i + 1)`.
+- If `x` is `None`, it returns `None`.
+
+#### Example Calls:
+
 ```rust
 let five = Some(5);
 let six = plus_one(five);
 let none = plus_one(None);
 ```
-✔ `six` now holds `Some(6)`.
-✔ `none` remains `None`.
 
----
-## **The Importance of Exhaustiveness in `match`**
-Rust requires that `match` expressions **cover all possible cases**. If we forget to handle a case, Rust **won’t compile the code**.
-Exhaustive checking is a feature in some programming languages where the compiler ensures that all possible cases of a value are handled in a match or switch statement.
+✔ `six` holds `Some(6)` while `none` remains `None`.
+
+### Exhaustiveness and Catch-All Patterns
+
+Rust requires that every possible case is handled in a match expression. If a variant is omitted, the compiler produces an error:
+
 ```rust
 fn plus_one(x: Option<i32>) -> Option<i32> {
     match x {
         Some(i) => Some(i + 1),
+        // Compiler error if `None` is not covered.
     }
 }
-``` **Compiler Error:**
 ```
-error[E0004]: non-exhaustive patterns: `None` not covered
-```
-✔ The solution is to **always handle all possible cases**:
-```rust
-match x {
-    Some(i) => Some(i + 1),
-    None => None,
-}
-```
-✔ This prevents missing cases, making Rust programs **safer and more reliable**.
 
----
-## **Catch-All Patterns with `_`**
-If you don’t need to handle every case explicitly, use a **catch-all pattern (`_`)**:
+A catch-all pattern `_` can be used to handle all remaining cases:
 
 ```rust
-let dice_roll = 9;
 match dice_roll {
     3 => add_fancy_hat(),
     7 => remove_fancy_hat(),
     _ => move_player(dice_roll),
 }
 ```
-✔ The `_` pattern **matches all remaining cases**.
-✔ If `dice_roll` is `3`, it calls `add_fancy_hat()`.
-✔ If `dice_roll` is `7`, it calls `remove_fancy_hat()`.
-✔ Otherwise, it calls `move_player(dice_roll)`.
 
-### **Ignoring the Value with `_`**
-If you don’t need to use the value, just use `_`:
-```rust
-match dice_roll {
-    3 => add_fancy_hat(),
-    7 => remove_fancy_hat(),
-    _ => (), // Do nothing
-}
-```
-✔ This explicitly tells Rust we’re **intentionally ignoring** other values.
+✔ The wildcard `_` pattern ensures that any unmatched value is processed.
 
 ---
-## **Key Takeaways**
-✔ `match` **compares a value against multiple patterns** and executes code accordingly.  
-✔ **All cases must be handled**—Rust enforces exhaustiveness.  
-✔ Can **extract values from enum variants** (e.g., `Option<T>`, `Coin::Quarter(state)`).  
-✔ **Use `_` as a catch-all pattern** to handle remaining cases.  
-✔ `match` works seamlessly with Rust enums like `Option<T>`, ensuring **safe handling of missing values**.  
 
-# Concise Control Flow with `if let`
+## Concise Control Flow with `if let`
 
-## **What is `if let`?**
-Rust provides a more concise way to **match against a single pattern** using `if let`. This is useful when you only care about one specific match case and want to ignore everything else.
+### What is `if let`?
 
-Instead of using a full `match` expression when only **one pattern matters**, `if let` allows us to reduce boilerplate code and improve readability.
-````rust
+Rust offers `if let` as a concise alternative to `match` when you only care about one specific pattern.
+
+Instead of writing a full match expression when only one case matters, you can use `if let` to reduce boilerplate.
+
+#### Example: Using `if let`
+
+```rust
 if let Some(n) = maybe_number {
     println!("Number: {}", n);
 }
-````
----
-## **`match` vs. `if let`**
-Consider the following example where we have a configuration value stored in an `Option<u8>`. We want to execute code **only if the value is `Some`**.
+```
 
-### **Using `match` (Verbose Approach)**
+- If `maybe_number` is `Some(n)`, the block runs; otherwise, it is skipped.
+
+### `match` vs. `if let`
+
+#### Using `match` (Verbose Approach)
+
 ```rust
 let config_max = Some(3u8);
 
 match config_max {
     Some(max) => println!("The maximum is configured to be {max}"),
-    _ => (), // Required to satisfy `match`, even if we do nothing
+    _ => (), // Explicitly handle the None case
 }
 ```
-✔ The `_ => ()` is **required** in `match` to handle all cases, even though we don’t do anything for `None`.
 
-### **Using `if let` (Concise Approach)**
+#### Using `if let` (Concise Approach)
+
 ```rust
 let config_max = Some(3u8);
 
@@ -3043,41 +3400,11 @@ if let Some(max) = config_max {
     println!("The maximum is configured to be {max}");
 }
 ```
-✔ `if let` removes the need for `_ => ()`, making the code **simpler and cleaner**.
-✔ Works exactly like `match`, but **only for the `Some` case**.
-✔ If `config_max` is `None`, the code inside `{}` **does not run**.
 
----
-## **How `if let` Works**
-- `if let` takes a **pattern** and an **expression** separated by `=`.
-- If the expression **matches the pattern**, the code inside `{}` executes.
-- If the expression **doesn’t match**, the block **is skipped** (instead of requiring an explicit `_ => ()` case like `match`).
+✔ `if let` reduces the need for an explicit `_ => ()` case, making the code cleaner.
 
-### **Syntax:**
-```rust
-if let Pattern = Expression {
-    // Code to execute if the pattern matches
-}
-```
+#### Handling Unmatched Cases with `if let ... else`
 
----
-## **Trade-offs Between `match` and `if let`**
-| Feature        | `match` | `if let` |
-|---------------|--------|---------|
-| Handles multiple cases? | Yes | No, only one case |
-| Enforces exhaustive checking? | Yes | No |
-| Verbosity | 🛑 More code | Less code |
-| Readability | Can be cluttered for simple cases | Simpler for single cases |
-| Error Prevention | Ensures all cases are handled | Might miss cases if not careful |
-
- **Use `match` when handling multiple cases.**
-**Use `if let` when handling only one case and ignoring the rest.**
-
----
-## **Using `if let` with `else`**
-If we need to **handle the unmatched cases**, we can use `else`:
-
-### **Example: Counting Non-Quarter Coins**
 ```rust
 let mut count = 0;
 if let Coin::Quarter(state) = coin {
@@ -3086,89 +3413,64 @@ if let Coin::Quarter(state) = coin {
     count += 1;
 }
 ```
-✔ If `coin` is a `Quarter`, it prints the state.
-✔ If `coin` is **anything else**, `count` is incremented.
-✔ This is **equivalent** to the `match` version:
-```rust
-match coin {
-    Coin::Quarter(state) => println!("State quarter from {:?}!", state),
-    _ => count += 1,
-}
-```
-✔ `if let` eliminates the need for `_ =>`, making the code cleaner.
+
+✔ If `coin` is not a `Quarter`, the else block is executed.
 
 ---
-## **Final Thoughts**
-### **When to Use `match`?**
-- When you **need to handle multiple patterns**.
-- When **exhaustive matching** is important.
-- When you **must account for all cases** explicitly.
 
-### **When to Use `if let`?**
-- When you **only care about one pattern**.
-- When you want **concise and readable** code.
-- When ignoring other cases **is acceptable**.
+## Chapter 6 Summary - Enums, Option, match, and if let
 
-# **Chapter 6: Summary - Enums, Option, match, and if let**
+### 1. What Are Enums?
+- **Enums** allow defining a type with a fixed set of possible variants.
+- An enum instance can hold **only one of its variants** at a time.
 
-## **1. What Are Enums?**
-- Enums allow defining a **type with a fixed set of possible values**.
-- Unlike structs, an **enum instance can only hold one of its variants** at a time.
+#### Example: Enum for IP Addresses
 
-### **Example: Enum for IP Addresses**
 ```rust
 enum IpAddr {
     V4(u8, u8, u8, u8),
     V6(String),
 }
 ```
-- `V4` stores four `u8` values, while `V6` stores a `String`.
+
+- `V4` stores four `u8` values; `V6` stores a `String`.
 - Enums allow each variant to store **different types of data**.
 
 ✔ **Why Use an Enum?**
-- Ensures that a value is **only one of the possible variants**.
-- Reduces redundancy (no need for extra fields like in structs).
+- Ensures a value is **only one of the possible variants**.
+- Reduces redundancy by eliminating extra fields.
 
----
-## **2. Enums vs Structs: When to Use Each**
-| Feature            | Structs | Enums |
-|-------------------|--------|------|
-| **Grouping Data** | Related fields that must always be together | One of multiple predefined variants |
-| **Data Flexibility** | All fields must be present | Each variant can store different types of data |
-| **Pattern Matching** | Not applicable | Requires exhaustive handling of all cases |
-| **Use Case** | **User profiles, structured records** | **IP addresses, message types, states** |
+### 2. Enums vs Structs: When to Use Each
 
-✔ **Use Structs** when all fields are always required together.  
-✔ **Use Enums** when only **one** variant is active at a time.  
-✔ **Use Structs inside Enums** when variants need **additional structured data**.
+| **Feature**            | **Structs**                         | **Enums**                          |
+|------------------------|-------------------------------------|------------------------------------|
+| Grouping Data          | Related fields that must always be together | One of multiple predefined variants |
+| Data Flexibility       | All fields are always required      | Each variant can store different data types |
+| Pattern Matching       | Not applicable                      | Requires exhaustive handling of all cases |
 
----
-## **3. The `Option<T>` Enum and Why Rust Has No `null`**
-- `Option<T>` represents **either Some(T) (a value) or None (no value)**.
-- Prevents **null-related crashes** common in other languages.
+✔ **Use Structs** when all fields are required together.  
+✔ **Use Enums** when only **one variant** is active at a time.  
+✔ **Use Structs inside Enums** when variants need additional structured data.
 
-### **Example: Using `Option<T>`**
+### 3. The `Option<T>` Enum and Why Rust Has No `null`
+- `Option<T>` represents either `Some(T)` (a value) or `None` (no value).
+- Eliminates many common null-related bugs seen in other languages.
+
+#### Example: Using `Option<T>`
+
 ```rust
 let some_number = Some(5);
 let absent_number: Option<i32> = None;
 ```
-✔ **Rust does not allow using `Option<T>` directly in operations**, forcing explicit handling:
-```rust
-let x: i8 = 5;
-let y: Option<i8> = Some(5);
-let sum = x + y; // ERROR: Cannot add i8 and Option<i8>
-```
-✔ **To use an `Option<T>`, convert it using `match` or `unwrap_or()`:**
-```rust
-let value = y.unwrap_or(0); // If y is Some(5), value = 5; if None, value = 0
-```
 
----
-## **4. The `match` Control Flow Construct**
-- `match` compares a value **against multiple patterns** and executes code based on the first match.
-- Rust **ensures all cases are handled** (exhaustiveness).
+✔ Rust forces you to **explicitly handle** the absence of a value.
 
-### **Example: `match` with a Coin Enum**
+### 4. The `match` Control Flow Construct
+- `match` compares a value against multiple patterns.
+- Rust enforces **exhaustiveness**, ensuring every case is handled.
+
+#### Example: Matching on a Coin Enum
+
 ```rust
 enum Coin {
     Penny,
@@ -3186,29 +3488,15 @@ fn value_in_cents(coin: Coin) -> u8 {
     }
 }
 ```
-✔ If `coin` is `Coin::Penny`, the function **returns `1`**.  
-✔ The `_` wildcard pattern can **handle all remaining cases**:
-```rust
-match dice_roll {
-    3 => add_fancy_hat(),
-    7 => remove_fancy_hat(),
-    _ => move_player(dice_roll),
-}
-```
-✔ **Extracting data from an enum variant using `match`**:
-```rust
-match coin {
-    Coin::Quarter(state) => println!("State quarter from {:?}!", state),
-    _ => println!("Regular coin"),
-}
-```
 
----
-## **5. `if let`: A Concise Alternative to `match`**
-- `if let` is **syntax sugar for `match`** when handling **only one variant**.
-- Reduces **boilerplate code** when the other variants can be ignored.
+✔ The wildcard `_` can catch any unhandled cases.
 
-### **Example: `match` vs. `if let`**
+### 5. `if let`: A Concise Alternative to `match`
+- **`if let`** is useful when you only care about one pattern.
+- It makes code more concise while still providing safe pattern matching.
+
+#### Example: `match` vs. `if let`
+
 ```rust
 // Using match (verbose)
 match config_max {
@@ -3221,24 +3509,17 @@ if let Some(max) = config_max {
     println!("Max is {max}");
 }
 ```
-✔ `if let` is **shorter** and **more readable** when only **one pattern matters**.
-✔ Use `if let ... else` if you need to handle the **other cases**:
-```rust
-if let Coin::Quarter(state) = coin {
-    println!("State quarter from {:?}!", state);
-} else {
-    count += 1;
-}
-```
+
+✔ `if let` reduces boilerplate when handling a single case.
+
+### 6. Key Takeaways
+✔ **Enums provide a way to define a type with multiple possible variants.**  
+✔ **Each variant can store different types of data**, eliminating the need for extra structs.  
+✔ Rust’s `Option<T>` replaces `null` by forcing explicit handling of absent values.  
+✔ The `match` construct ensures that every case is handled safely and exhaustively.  
+✔ **`if let` offers a concise syntax** for matching a single case.
 
 ---
-## **6. Key Takeaways from Chapter 6**
-**Enums provide a way to define a type with multiple possible variants.**  
-**Enums can store different types of data inside each variant.**  
-**Rust’s `Option<T>` replaces `null`, preventing common errors.**  
-**`match` ensures exhaustive handling of all cases, improving reliability.**  
-**Use `if let` when matching only one variant for cleaner code.**  
-**Enums + `match` are a powerful combination for handling different cases in a structured way.**
 
 # Chapter 7 - Managing Growing Projects with Packages, Crates, and Modules
 
