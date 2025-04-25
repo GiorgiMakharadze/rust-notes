@@ -823,6 +823,12 @@ fn main() {
 
 ### Ownership and Functions in Rust
 
+**Function Argument Types (Rule of Thumb)**
+
+1) Need to store the argument somewhere? | -> Favor taking ownership (receive a value)
+2) Need to do a calculation with the value? | -> Favor receiving a read-only reference
+3) Need to change the value in some way? | -> Favor receiving a mutable reference
+
 ### **Ownership and Functions in Rust**
 
 #### **How Ownership Works with Strings**
@@ -7045,7 +7051,14 @@ let iter = nums.iter()
 **Consumers** are methods that automatically call the next() method on an iterator to consume its values.
 #### Examples of Consumers:
 
-- `.collect()` – gathers items into a collection (e.g., `Vec`, `HashMap`, `List`). if from function we are returning -> Vec<String> it will gather items into Vec colletciont. same for others. Also collect knows what collection to return depdening on *type anotation*!
+- `.collect()` – gathers items into a collection (e.g., `Vec`, `HashMap`, `List`). if from function we are returning -> Vec<String> it will gather items into Vec colletcion. Same for others. Also collect knows what collection to return depdening on *type anotation* too!
+**Example** 
+````rust
+    let uppercase = elements
+    .iter()
+    .map(|el| el.to_uppercase())
+    .collect::<Vec<String>>();
+````    
 - `.sum()` – sums up all elements
 - `.count()` – counts elements
 - `.any()`, `.all()` – logical tests
@@ -7129,7 +7142,7 @@ fn shoes_in_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
 
 - `iter()`: yields **immutable references** (`&T`)
 - `iter_mut()`: yields **mutable references** (`&mut T`)
-- `into_iter()`: yields **owned values** (`T`)
+- `into_iter()`: yields **owned values** (`T`) -> call into_inter only on a calue not referecne!
 
 Choose based on whether you want to read, modify, or consume the collection.
 
